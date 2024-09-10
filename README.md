@@ -12,7 +12,7 @@ current database only a few song, plan to be added later by user or AI autogener
 - download this repo as zip and extract
 - goto `chrome://extensions` and Enable developer mode
 - click `Load unpacked` and select `src/` folder
-- goto [this video](https://youtu.be/A_MjCqQoLLA?si=khlDnW3jS4VTpJZz&t=52)
+- goto [this video](https://www.youtube.com/watch?v=QDYfEBY9NM4)
 
 ## Features
 - support one row and table mode
