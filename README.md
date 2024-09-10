@@ -8,6 +8,12 @@ Detect youtube/youtube music url and show guitar chord overlay.\
 current database only a few song, plan to be added later by user or AI autogenerate or web scraping.
 
 
+## Installation
+- download this repo as zip and extract
+- goto `chrome://extensions` and Enable developer mode
+- click `Load unpacked` and select `src/` folder
+- goto [this video](https://youtu.be/A_MjCqQoLLA?si=khlDnW3jS4VTpJZz&t=52)
+
 ## Features
 - support one row and table mode
 - support dynamic tempo
