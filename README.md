@@ -12,3 +12,9 @@ current database only a few song, plan to be added later by user or AI autogener
 - support one row and table mode
 - support dynamic tempo
 - support multiple chords version e.g. capo profile or bass and piano chord
+
+
+## TODO
+- [ ] Chord image guide
+- [ ] show custom message at specific time e.g. let user know when tempo changed or need to change capo fret
+- [ ] function for submitting a chords via a pop up window
