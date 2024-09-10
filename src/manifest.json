@@ -1,0 +1,36 @@
+{
+    "manifest_version": 3,
+    "name": "YouTube Music Video ID Grabber",
+    "version": "1.0",
+    "description": "Grabs the YouTube Music video ID and displays it.",
+    "permissions": [
+      "storage",
+      "activeTab",
+      "scripting"
+    ],
+    "background": {
+      "service_worker": "background.js",
+      "type": "module"
+  },
+
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+      }
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://music.youtube.com/*","*://www.youtube.com/*","*://www.ufret.jp/*"],
+        "js": ["yt_helpers.js","beat_runner.js", "content.js"]
+      }
+    ],
+    "icons": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  }
+  
