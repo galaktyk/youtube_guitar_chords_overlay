@@ -118,6 +118,12 @@ function hideUi(){
 
 
 async function getChordTable(videoId) {
+  capoList = [];
+  chordsList = [];
+  mainBpmList = [];
+  startChordList = [];
+  tempoChangeList = [];
+  versionNameList = [];
 
   // 1. Fetch the dictionary from the first Pastebin link
   const dictUrl = 'https://firestore.googleapis.com/v1/projects/guitar-chords-873b9/databases/(default)/documents/guitar-chords/'+videoId
