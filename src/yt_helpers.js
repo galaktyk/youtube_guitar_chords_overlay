@@ -48,7 +48,10 @@ function hookPlayerEvents(player, handlePlay, handlePause)
 
   player.onpause = function() {
     handlePause(player.currentTime);
+  }
 
+  player.onseeked = function(){
+    handleSeek(player.currentTime);
   }
 
   return true;

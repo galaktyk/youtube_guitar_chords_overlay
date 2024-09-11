@@ -53,6 +53,9 @@ let beatScheduler=null;
 let correctBeatIntervalId=null;
 
 let needUrgentScroll = false;
+let nextScrollEvent;
+let nextHightlightBeatEvent;
+let nextRunbeatEvent;
 
 
 // from database
@@ -105,13 +108,7 @@ function getFieldValue(field){
 
 function hideUi(){
   if (!isUiReady)return;
-  console.log("click")
-
-
   floatingDiv.style.visibility = "hidden";
-
-
-
 }
 
 
@@ -217,6 +214,14 @@ async function getChordTable(videoId) {
     font-size: 14px; /* Adjust font size as needed */
     box-sizing: border-box;
     min-width: 50px; /* Ensure minimum width even if empty */
+     user-select: none; /* Disables text selection */
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For Internet Explorer/Edge */
+  cursor: pointer; /* Changes cursor to pointer by default */
+}
+  .chord-box:hover {
+  cursor: pointer; /* Ensures cursor is a pointer on hover */
 }
 
 
@@ -299,11 +304,25 @@ async function getChordTable(videoId) {
   return;
 }
 
+
+
+
 function showChords(){
+
+
   
   scrollContainerDiv.innerHTML = `
-  ${ chordsList[versionSelector.selectedIndex].map(chord => `<div class="chord-box">${chord}</div>`).join('')}
+  ${ chordsList[versionSelector.selectedIndex].map((chord, index)  => `<div class="chord-box" beatNumber="${index}">${chord}</div>`).join('')}
   `
+
+  scrollContainerDiv.addEventListener('click', function(event) {
+    const chordBox = event.target.closest('.chord-box');
+    if (chordBox) {
+      const beatNumber = chordBox.getAttribute('beatNumber');
+      handleChordClick(beatNumber);
+    }
+  });
+
 
   mainBpmDiv.textContent = mainBpmList[versionSelector.selectedIndex];
   capoDiv.textContent = capoList[versionSelector.selectedIndex];
@@ -332,13 +351,46 @@ function handlePlay(timestamp){
   refPlayerState = PlayerState.PLAYING;
 
 }
+function handleChordClick(beatNumber) {
+
+  if(!audioPlayer)return;
+  const targetTimeSec =   getTimeFromBeatNumber(beatNumber)/1000;
+  
+ // needUrgentScroll = true;
+  //highlightBeat(beatNumber, /*shouldScrollAfter*/ 0)
+  audioPlayer.currentTime = targetTimeSec+0.01;
+
+  // handleSeek will be trigger after this
+
+}
+
+
+
+function handleSeek(){
+
+
+  const beatResult = getCurrentBeat(audioPlayer.currentTime * 1000);
+  
+  clearTimeout(nextScrollEvent);
+  clearTimeout(nextHightlightBeatEvent);
+  needUrgentScroll = true;
+  highlightBeat(beatResult.currentBeatNumber, /*shouldScrollAfter*/ 0);
+
+
+}
+
+
+
 
 function handlePause(timestamp){
   if (refPlayerState==PlayerState.PAUSED)return;
 
   playerStateDiv.textContent = "paused > "+timestamp;
 
-  clearInterval(correctBeatIntervalId)
+  clearTimeout(nextScrollEvent);
+  clearTimeout(nextHightlightBeatEvent);
+  clearTimeout(nextRunbeatEvent);
+
   stopAutoRunChords();
  
 
@@ -521,11 +573,16 @@ async function updateVideoIdAndChordTable() {
 
 
 
-async function highlightBeat(beatNumber){
+async function highlightBeat(beatNumber, shouldScrollAfter){
+
 
 
 
   beatNumber = Math.floor(beatNumber);
+
+  if (lastDrawIdx ==beatNumber){
+    return;
+  }
 
 
   // Restore previous box color to normal
@@ -546,27 +603,70 @@ async function highlightBeat(beatNumber){
   lastDrawIdx = beatNumber;
 
 
+  nextScrollEvent = setTimeout(() => {
 
-  if (needUrgentScroll || beatNumber % 4 ==0){
-    beatBox.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start', 
-      inline: 'start'  
-  });
-    needUrgentScroll = false;
+    if (needUrgentScroll || beatNumber % 4 ==0){
+      beatBox.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start', 
+        inline: 'start'  
+    });
+      needUrgentScroll = false;
+  
+    }
+  }, shouldScrollAfter);
 
+
+
+}
+function getTimeFromBeatNumber(inputBeatNumber) {
+  function getBeatDuration(bpm) {
+    return 60000 / bpm;
   }
 
+  let currentBPM = mainBpmList[versionSelector.selectedIndex];
+  let totalTime = 0;
+  let previousBeatNumber = 0;
+  const startChordTimeMs = startChordList[versionSelector.selectedIndex];
+  const tempoChange = tempoChangeList[versionSelector.selectedIndex];
 
-  
+  if (!tempoChange) return null;
 
+  // Iterate through each tempo change event
+  for (let i = 0; i < tempoChange.length; i++) {
+    const change = tempoChange[i];
+    const { beatNumber, bpm: newBPM } = change;
+    const beatDuration = getBeatDuration(currentBPM);
+    const beatsPassed = beatNumber - previousBeatNumber;
+
+    // Calculate total time for the beats up to the next tempo change
+    const segmentTime = beatsPassed * beatDuration;
+
+    // Check if the target inputBeatNumber is within this segment
+    if (inputBeatNumber <= beatNumber) {
+      const beatsFromPrevious = inputBeatNumber - previousBeatNumber;
+      const timeFromPrevious = beatsFromPrevious * beatDuration;
+
+      return startChordTimeMs + totalTime + timeFromPrevious;
+    }
+
+    // Update total time and BPM for the next segment
+    totalTime += segmentTime;
+    previousBeatNumber = beatNumber;
+    currentBPM = newBPM;
+  }
+
+  // If the inputBeatNumber is beyond the last tempo change
+  const finalBeatDuration = getBeatDuration(currentBPM);
+  const beatsFromPrevious = inputBeatNumber - previousBeatNumber;
+  const finalTime = totalTime + (beatsFromPrevious * finalBeatDuration);
+
+  return startChordTimeMs + finalTime;
 }
 
 
 
-
-
-function getCurrentBeat(currentTime){
+function getCurrentBeat(currentTimeMs){
 
 
 
@@ -582,19 +682,23 @@ function getCurrentBeat(currentTime){
 
   const tempoChange = tempoChangeList[versionSelector.selectedIndex];
 
+  if (!tempoChange)return;
+
   
   // Check if current time is before the first beat
-  if (currentTime < startChordTimeMs) {
-    const timeBeforeFirstBeat = startChordTimeMs - currentTime;
-    return { beatNumber: -1, remainingTimeTillNextBeatMs: timeBeforeFirstBeat };
+  if (currentTimeMs <= startChordTimeMs) {
+    const timeBeforeFirstBeat = startChordTimeMs - currentTimeMs;
+
+    return { "currentBeatNumber":-1, "remainingTimeTillNextBeatMs": timeBeforeFirstBeat };
   }
   // Adjust current time to account for startChordTimeMs
-  const adjustedCurrentTime = currentTime - startChordTimeMs;
+  const adjustedCurrentTimeMs = currentTimeMs - startChordTimeMs;
 
 
 
   // Iterate through each tempo change event
-  for (const change of tempoChange) {
+  for (let i =0; i<tempoChange.length;i++) {
+      const change = tempoChange[i];
       const { beatNumber, bpm: newBPM } = change;
       const beatDuration = getBeatDuration(currentBPM);
       const beatsPassed = beatNumber - previousBeatNumber;
@@ -603,9 +707,9 @@ function getCurrentBeat(currentTime){
       const segmentTime = beatsPassed * beatDuration;
 
       // Check if the adjusted current time falls within this segment
-      if (adjustedCurrentTime <= totalTime + segmentTime) {
+      if (adjustedCurrentTimeMs <= totalTime + segmentTime) {
           // Calculate the current beat within this segment
-          const timeIntoSegment = adjustedCurrentTime - totalTime;
+          const timeIntoSegment = adjustedCurrentTimeMs - totalTime;
           const beatOffset = timeIntoSegment / beatDuration;
           const currentBeatNumber = previousBeatNumber + beatOffset;
           
@@ -614,7 +718,7 @@ function getCurrentBeat(currentTime){
           const nextBeatTime = nextBeatPosition * beatDuration;
           const timeToNextBeat = nextBeatTime - timeIntoSegment;
 
-          return { currentBeatNumber, remainingTimeTillNextBeatMs: timeToNextBeat };
+          return { "currentBeatNumber":currentBeatNumber, "remainingTimeTillNextBeatMs": timeToNextBeat };
       }
 
       // Update total time and BPM for the next segment
@@ -625,31 +729,47 @@ function getCurrentBeat(currentTime){
 
   // If the adjusted current time is beyond the last tempo change, handle it here
   const finalBeatDuration = getBeatDuration(currentBPM);
-  const beatsPassed = (adjustedCurrentTime - totalTime) / finalBeatDuration;
+  const beatsPassed = (adjustedCurrentTimeMs - totalTime) / finalBeatDuration;
   const finalBeatNumber = previousBeatNumber + beatsPassed;
 
   // Calculate remaining time till the next beat
-  const timeIntoFinalSegment = (adjustedCurrentTime - totalTime) % finalBeatDuration;
+  const timeIntoFinalSegment = (adjustedCurrentTimeMs - totalTime) % finalBeatDuration;
   const timeToNextBeat = finalBeatDuration - timeIntoFinalSegment;
 
-  return { currentBeatNumber: finalBeatNumber, remainingTimeTillNextBeatMs: timeToNextBeat };
+  return { "currentBeatNumber": finalBeatNumber, "remainingTimeTillNextBeatMs": timeToNextBeat ,"beatDuration":finalBeatDuration};
 }
 
 
 
 function runBeat(){
 
+
   if (!shouldRunBeat)return;
 
   const beatResult = getCurrentBeat(audioPlayer.currentTime * 1000);
-  const timeTillNextBeat = Math.max(0, beatResult.remainingTimeTillNextBeatMs);
+  let timeTillNextBeat = Math.max(0, beatResult.remainingTimeTillNextBeatMs);
+  timeTillNextBeat /= audioPlayer.playbackRate;
 
 
 
-  setTimeout(() => {
-    highlightBeat(beatResult.currentBeatNumber +1)
+  let timeToUpdate;
+
+  if (timeTillNextBeat < (beatResult.beatDuration/audioPlayer.playbackRate)/8){
+    timeToUpdate = 0;
+  }else{
+    timeToUpdate = timeTillNextBeat;
+  }
+
+
+
+  nextHightlightBeatEvent = setTimeout(() => {
+    highlightBeat(beatResult.currentBeatNumber+1, /*shouldScrollAfter*/ beatResult.beatDuration/4)
+  }, timeToUpdate);
+
+
+  nextRunbeatEvent = setTimeout(() => {
     runBeat();
-  }, timeTillNextBeat);
+  }, timeTillNextBeat*0.88);
 
 
 }

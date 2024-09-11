@@ -8,10 +8,6 @@
       "activeTab",
       "scripting"
     ],
-    "background": {
-      "service_worker": "background.js",
-      "type": "module"
-  },
 
     "action": {
       "default_popup": "popup.html",
@@ -24,7 +20,7 @@
     "content_scripts": [
       {
         "matches": ["*://music.youtube.com/*","*://www.youtube.com/*","*://www.ufret.jp/*"],
-        "js": ["yt_helpers.js","beat_runner.js", "content.js"]
+        "js": ["yt_helpers.js", "content.js"]
       }
     ],
     "icons": {
