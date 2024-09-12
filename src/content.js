@@ -66,6 +66,13 @@ let startChordList = [];
 let tempoChangeList = [];
 let versionNameList = [];
 
+let tryHookCount = 0;
+
+const almostBlack = "#1d1d1d"
+const almostWhite = "#e8e9ec"
+const almostRed = "#C63C51"
+
+let shouldShowChordIMage=true;
 
 
 async function fetchData(url) {
@@ -137,7 +144,7 @@ async function getChordTable(videoId) {
 
   if (!data || data === undefined || data.fields === undefined){
     floatingDiv.innerHTML = `
-    <p  style="color: white">Video ID: <span id="video-id">${videoId} <br>
+    <p  style="color: ${almostWhite}">Video ID: <span id="video-id">${videoId} <br>
     Song not found in the database</span></p>
   `;
     return;
@@ -200,32 +207,67 @@ async function getChordTable(videoId) {
 
 
 
+
 .chord-box {
-    display: flex; /* Use flexbox for .chord-box */
-    width: 50px; /* Set the width */
-    height: 50px; /* Set the height */
-    border: 1px solid #ffffff;
+position:relative;
+
+display: flex;
+flex-direction: column;
+justify-content: center;
+   
+    width: 75px; 
+    height: 75px; 
+
+
+    min-width: 75px; /* Ensure minimum width even if empty */
+
     border-radius: 13px;
-    background: #1d1d1d;
-    color: white;
+    background: ${almostWhite};
+    color: ${almostBlack};
     margin-right: 5px;
-    align-items: center; /* Center text vertically */
-    justify-content: center; /* Center text horizontally */
-    font-size: 14px; /* Adjust font size as needed */
+  
+    font-size: 18px;
+    font-weight: bold;
     box-sizing: border-box;
-    min-width: 50px; /* Ensure minimum width even if empty */
+
+    text-align: center;
+
      user-select: none; /* Disables text selection */
   -webkit-user-select: none; /* For Safari */
   -moz-user-select: none; /* For Firefox */
   -ms-user-select: none; /* For Internet Explorer/Edge */
   cursor: pointer; /* Changes cursor to pointer by default */
+  margin:2px;
 }
   .chord-box:hover {
   cursor: pointer; /* Ensures cursor is a pointer on hover */
 }
 
+.chord-name{
+
+    position: absolute;
+    top: 0;
+        width: -webkit-fill-available;
+
+}
+
+
+.chord-icon{
+ border-radius: 13px;
+    transform: rotate(-90deg);
+    position: absolute;
+    bottom: -4%;
+    left: 15%;
+    width: 70%;
+    background:${almostWhite}
+}
 
     </style>
+
+
+
+
+
 
 
     <button id="close-button" style="position: absolute; right:0; top:0">X</button>
@@ -242,6 +284,7 @@ async function getChordTable(videoId) {
   <p>Hook state: <span id="hook-state">false</span><br></p>
     <p>Player state: <span id="player-state">-</span><br></p>
 
+
     
 <select id="version-selector">
         <option value="option1">Option 1</option>
@@ -257,10 +300,14 @@ async function getChordTable(videoId) {
 
 
 
+
+
   `;
 
   
   
+
+
   mainBpmDiv = document.getElementById("main-bpm");
   capoDiv = document.getElementById("capo");
 
@@ -269,6 +316,12 @@ async function getChordTable(videoId) {
   playerStateDiv = document.getElementById('player-state');
   scrollContainerDiv = document.getElementById("chords-scroll-container")
   pluginStateDiv = document.getElementById("plugin-state")
+
+
+  
+
+
+
 
   const xButton = document.getElementById("close-button");
   xButton.addEventListener('click', () => {
@@ -310,10 +363,14 @@ async function getChordTable(videoId) {
 function showChords(){
 
 
-  
-  scrollContainerDiv.innerHTML = `
-  ${ chordsList[versionSelector.selectedIndex].map((chord, index)  => `<div class="chord-box" beatNumber="${index}">${chord}</div>`).join('')}
-  `
+  scrollContainerDiv.innerHTML = 
+  chordsList[versionSelector.selectedIndex]
+    .map((chord, index) => 
+      `<div class="chord-box" id="chord-box-${index}" beatNumber="${index}">
+         <div class="chord-name">${chord}</div>
+         ${(chord === "" || !shouldShowChordIMage) ? "" : `<img class="chord-icon" src="${chrome.runtime.getURL("chord_icons/" + chord + ".svg")}" alt="${chord}">`}
+       </div>`)
+    .join('');
 
   scrollContainerDiv.addEventListener('click', function(event) {
     const chordBox = event.target.closest('.chord-box');
@@ -409,6 +466,13 @@ function tryHookPlayer(){
 
   if (isPlayerHooked) return;
 
+  tryHookCount ++;
+
+  if (tryHookCount > 20){
+    clearInterval(hookIntervalId)
+    console.warn("Try hook exceed 20 times, quit.")
+  }
+
 
   pluginState = PluginState.HOOKING;
   pluginStateDiv.textContent = pluginState.description;
@@ -450,12 +514,13 @@ function injectCustomElement() {
   // Set the ID and styles for the new div
   floatingDiv.id = 'custom-floating-box';
   floatingDiv.style.position = 'fixed'; // Use 'fixed' to position relative to the viewport
-  floatingDiv.style.top = '20px'; // Initial top position
-  floatingDiv.style.left = '20px'; // Initial left position
-  floatingDiv.style.width = '500px';
+  floatingDiv.style.bottom = '20px'; // Initial top position
+  floatingDiv.style.left = '50%'; // Initial left position
+  floatingDiv.style.width = '800px';
   floatingDiv.style.height = '200px';
   floatingDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'; // Green with 40% transparency
-  floatingDiv.style.border = '2px solid #000'; // Optional border for visibility
+  floatingDiv.style.border = '2px solid'; // Optional border for visibility
+  floatingDiv.style.borderColor = almostRed; // Optional border for visibility
   floatingDiv.style.zIndex = '9999'; // Ensure it's on top of other elements
   floatingDiv.style.resize = 'both';
   floatingDiv.style.overflow = 'auto'; // Ensure content is scrollable if resized
@@ -589,7 +654,9 @@ async function highlightBeat(beatNumber, shouldScrollAfter){
   if (lastDrawIdx >= 0){
     const lastDrawBox = scrollContainerDiv.children[lastDrawIdx];
     if (!lastDrawBox || !lastDrawBox.style) return;
-    lastDrawBox.style = ""
+    lastDrawBox.style.backgroundColor = almostWhite;
+    lastDrawBox.style.color = almostBlack;
+
   }
 
 
@@ -597,8 +664,8 @@ async function highlightBeat(beatNumber, shouldScrollAfter){
   const beatBox = scrollContainerDiv.children[beatNumber];
   if (!beatBox || !beatBox.style) return;
 
-  beatBox.style.backgroundColor = "white"
-  beatBox.style.color ="#1c1c1c";
+  beatBox.style.backgroundColor = almostRed
+  beatBox.style.color = almostWhite;
 
   lastDrawIdx = beatNumber;
 
@@ -844,7 +911,7 @@ function enableFunctionality() {
 
 
     // Try hook player every 500ms
-
+    tryHookCount = 0;
     hookIntervalId = setInterval(tryHookPlayer, 500);
 
 

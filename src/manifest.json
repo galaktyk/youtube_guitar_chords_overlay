@@ -8,6 +8,10 @@
       "activeTab",
       "scripting"
     ],
+    "web_accessible_resources": [{
+    "matches": ["<all_urls>"],
+    "resources": ["*.svg"]
+}],
 
     "action": {
       "default_popup": "popup.html",
