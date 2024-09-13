@@ -1,3 +1,30 @@
-<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130 150" width="130" height="150"><style>tspan{white-space:pre}.a{fill:#444}.b{stroke:#444}.c{fill:#444;stroke:#444}.d{fill:#fff;stroke:#444}.e{font-size: 13px;fill: #444444;font-family: ""}</style><path class="a" d="m27.6 34.6h81.3v4h-81.3z"/><path class="b" d="m27.6 38.6v80.3"/><path class="b" d="m43.9 38.6v80.3"/><path class="b" d="m60.1 38.6v80.3"/><path class="b" d="m76.4 38.6v80.3"/><path class="b" d="m92.6 38.6v80.3"/><path class="b" d="m108.9 38.6v80.3"/><path class="b" d="m27.6 38.6h81.3"/><path class="b" d="m27.6 54.6h81.3"/><path class="b" d="m27.6 70.7h81.3"/><path class="b" d="m27.6 86.8h81.3"/><path class="b" d="m27.6 102.9h81.3"/><path class="b" d="m27.6 118.9h81.3"/><path class="c" d="m108.9 51.5c-2.7 0-4.9-2.2-4.9-4.9 0-2.7 2.2-4.9 4.9-4.9 2.7 0 4.8 2.2 4.8 4.9 0 2.7-2.1 4.9-4.8 4.9z"/><path class="c" d="m92.6 83.6c-2.7 0-4.8-2.2-4.8-4.8 0-2.7 2.1-4.9 4.8-4.9 2.7 0 4.9 2.2 4.9 4.9 0 2.6-2.2 4.8-4.9 4.8z"/><path class="c" d="m76.4 67.6c-2.7 0-4.9-2.2-4.9-4.9 0-2.7 2.2-4.9 4.9-4.9 2.7 0 4.8 2.2 4.8 4.9 0 2.7-2.1 4.9-4.8 4.9z"/><path class="d" d="m60.1 31.4c-2.7 0-4.9-2.2-4.9-4.9 0-2.7 2.2-4.8 4.9-4.8 2.7 0 4.9 2.1 4.9 4.8 0 2.7-2.2 4.9-4.9 4.9z"/><text style="transform:matrix(1,0,0,1,40.211,32.5);paint-order:stroke fill markers;stroke:#444;stroke-width: NaN;stroke-linejoin: round;" ><tspan x="0" y="0" class="e">X
-</tspan></text><text style="transform:matrix(1,0,0,1,23.961,32.5);paint-order:stroke fill markers;stroke:#444;stroke-width: NaN;stroke-linejoin: round;" ><tspan x="0" y="0" class="e">X
-</tspan></text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" viewBox="12.0 20.0 104.0 106.0" width="150.0" height="130.0">
+  <g transform="rotate(-90, 65.0, 75.0)">
+    <style>tspan{white-space:pre}.a{fill:#444}.b{stroke:#444}.c{fill:#444;stroke:#444}.d{fill:#fff;stroke:#444}.e{font-size: 13px;fill: #444444;font-family: ""}</style>
+    <path class="a" d="m27.6 34.6h81.3v4h-81.3z"/>
+    <path class="b" d="m27.6 38.6v80.3"/>
+    <path class="b" d="m43.9 38.6v80.3"/>
+    <path class="b" d="m60.1 38.6v80.3"/>
+    <path class="b" d="m76.4 38.6v80.3"/>
+    <path class="b" d="m92.6 38.6v80.3"/>
+    <path class="b" d="m108.9 38.6v80.3"/>
+    <path class="b" d="m27.6 38.6h81.3"/>
+    <path class="b" d="m27.6 54.6h81.3"/>
+    <path class="b" d="m27.6 70.7h81.3"/>
+    <path class="b" d="m27.6 86.8h81.3"/>
+    <path class="b" d="m27.6 102.9h81.3"/>
+    <path class="b" d="m27.6 118.9h81.3"/>
+    <path class="c" d="m108.9 51.5c-2.7 0-4.9-2.2-4.9-4.9 0-2.7 2.2-4.9 4.9-4.9 2.7 0 4.8 2.2 4.8 4.9 0 2.7-2.1 4.9-4.8 4.9z"/>
+    <path class="c" d="m92.6 83.6c-2.7 0-4.8-2.2-4.8-4.8 0-2.7 2.1-4.9 4.8-4.9 2.7 0 4.9 2.2 4.9 4.9 0 2.6-2.2 4.8-4.9 4.8z"/>
+    <path class="c" d="m76.4 67.6c-2.7 0-4.9-2.2-4.9-4.9 0-2.7 2.2-4.9 4.9-4.9 2.7 0 4.8 2.2 4.8 4.9 0 2.7-2.1 4.9-4.8 4.9z"/>
+    <path class="d" d="m60.1 31.4c-2.7 0-4.9-2.2-4.9-4.9 0-2.7 2.2-4.8 4.9-4.8 2.7 0 4.9 2.1 4.9 4.8 0 2.7-2.2 4.9-4.9 4.9z"/>
+    <text style="transform:matrix(1,0,0,1,40.211,32.5);paint-order:stroke fill markers;stroke:#444;stroke-width: NaN;stroke-linejoin: round;">
+      <tspan x="0" y="0" class="e">X
+</tspan>
+    </text>
+    <text style="transform:matrix(1,0,0,1,23.961,32.5);paint-order:stroke fill markers;stroke:#444;stroke-width: NaN;stroke-linejoin: round;">
+      <tspan x="0" y="0" class="e">X
+</tspan>
+    </text>
+  </g>
+</svg>

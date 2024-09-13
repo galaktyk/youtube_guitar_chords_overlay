@@ -260,11 +260,11 @@ justify-content: center;
 
 .chord-icon{
  border-radius: 13px;
-    transform: rotate(-90deg);
+
     position: absolute;
-    bottom: -4%;
-    left: 15%;
-    width: 70%;
+    bottom: 4%;
+    left: 10%;
+    width: 80%;
     background:${almostWhite}
 }
 
@@ -809,7 +809,7 @@ function highlightBeat(beatToBlink){
     const lastDrawBox = scrollContainerDiv.children[lastDrawIdx];
     if (!lastDrawBox || !lastDrawBox.style) return;
     lastDrawBox.style.backgroundColor = almostWhite;
-    lastDrawBox.style.color = almostBlack;
+
 
   }
 
@@ -818,7 +818,7 @@ function highlightBeat(beatToBlink){
     if (!beatBox || !beatBox.style) return;
   
     beatBox.style.backgroundColor = almostRed
-    beatBox.style.color = almostWhite;
+
   
   
   
