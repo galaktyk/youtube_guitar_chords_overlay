@@ -27,7 +27,6 @@ let hostType=HostType.UNDEFINED;
 let refPlayerState = PlayerState.UNDEFINED;
 let hookIntervalId = 0;
 let autoRunIntervalId = 0;
-let currentBeat = 0.0;
 let lastDrawIdx=-1;
 let songBpm=120;//default 
 
@@ -72,7 +71,14 @@ const almostBlack = "#1d1d1d"
 const almostWhite = "#e8e9ec"
 const almostRed = "#C63C51"
 
+
+
 let shouldShowChordIMage=true;
+
+let timeTillNextBeat = 1000;
+let prevTimestamp = 0;
+
+
 
 
 async function fetchData(url) {
@@ -368,7 +374,7 @@ function showChords(){
     .map((chord, index) => 
       `<div class="chord-box" id="chord-box-${index}" beatNumber="${index}">
          <div class="chord-name">${chord}</div>
-         ${(chord === "" || !shouldShowChordIMage) ? "" : `<img class="chord-icon" src="${chrome.runtime.getURL("chord_icons/" + chord + ".svg")}" alt="${chord}">`}
+         ${(chord === "" || !shouldShowChordIMage) ? "" : `<img class="chord-icon" src="${chrome.runtime.getURL("chord_icons/" + chord.replace("#","s") + ".svg")}">`}
        </div>`)
     .join('');
 
@@ -389,7 +395,7 @@ function showChords(){
   scrollContainerDiv.style.flexDirection = "row";
   scrollContainerDiv.style.overflowX = "auto";
   scrollContainerDiv.style.width = "100%";
-  scrollContainerDiv.style.flexWrap = "nowrap";
+  //scrollContainerDiv.style.flexWrap = "nowrap";
 }
 
 
@@ -413,9 +419,8 @@ function handleChordClick(beatNumber) {
   if(!audioPlayer)return;
   const targetTimeSec =   getTimeFromBeatNumber(beatNumber)/1000;
   
- // needUrgentScroll = true;
-  //highlightBeat(beatNumber, /*shouldScrollAfter*/ 0)
-  audioPlayer.currentTime = targetTimeSec+0.01;
+
+  audioPlayer.currentTime = targetTimeSec + 0.01;
 
   // handleSeek will be trigger after this
 
@@ -425,13 +430,15 @@ function handleChordClick(beatNumber) {
 
 function handleSeek(){
 
-
-  const beatResult = getCurrentBeat(audioPlayer.currentTime * 1000);
-  
   clearTimeout(nextScrollEvent);
   clearTimeout(nextHightlightBeatEvent);
+  clearTimeout(nextRunbeatEvent);
+
+  // quick hightlight selected beat
+  const beatResult = getCurrentBeat(audioPlayer.currentTime * 1000)
+  highlightBeat(beatResult.currentBeatNumber);
+
   needUrgentScroll = true;
-  highlightBeat(beatResult.currentBeatNumber, /*shouldScrollAfter*/ 0);
 
 
 }
@@ -514,8 +521,8 @@ function injectCustomElement() {
   // Set the ID and styles for the new div
   floatingDiv.id = 'custom-floating-box';
   floatingDiv.style.position = 'fixed'; // Use 'fixed' to position relative to the viewport
-  floatingDiv.style.bottom = '20px'; // Initial top position
-  floatingDiv.style.left = '50%'; // Initial left position
+  floatingDiv.style.bottom = '20%'; // Initial top position
+  floatingDiv.style.left = '10%'; // Initial left position
   floatingDiv.style.width = '800px';
   floatingDiv.style.height = '200px';
   floatingDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'; // Green with 40% transparency
@@ -638,54 +645,6 @@ async function updateVideoIdAndChordTable() {
 
 
 
-async function highlightBeat(beatNumber, shouldScrollAfter){
-
-
-
-
-  beatNumber = Math.floor(beatNumber);
-
-  if (lastDrawIdx ==beatNumber){
-    return;
-  }
-
-
-  // Restore previous box color to normal
-  if (lastDrawIdx >= 0){
-    const lastDrawBox = scrollContainerDiv.children[lastDrawIdx];
-    if (!lastDrawBox || !lastDrawBox.style) return;
-    lastDrawBox.style.backgroundColor = almostWhite;
-    lastDrawBox.style.color = almostBlack;
-
-  }
-
-
-  // Change color of current beat's box
-  const beatBox = scrollContainerDiv.children[beatNumber];
-  if (!beatBox || !beatBox.style) return;
-
-  beatBox.style.backgroundColor = almostRed
-  beatBox.style.color = almostWhite;
-
-  lastDrawIdx = beatNumber;
-
-
-  nextScrollEvent = setTimeout(() => {
-
-    if (needUrgentScroll || beatNumber % 4 ==0){
-      beatBox.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start', 
-        inline: 'start'  
-    });
-      needUrgentScroll = false;
-  
-    }
-  }, shouldScrollAfter);
-
-
-
-}
 function getTimeFromBeatNumber(inputBeatNumber) {
   function getBeatDuration(bpm) {
     return 60000 / bpm;
@@ -808,35 +767,97 @@ function getCurrentBeat(currentTimeMs){
 
 
 
+
+
+function highlightBeat(beatToBlink){
+  
+  // const elapsed = timestamp - prevTimestamp;
+  // prevTimestamp = timestamp;
+
+
+  // timeTillNextBeat -= elapsed;
+
+  // if (timeTillNextBeat > 0){
+  //   console.log("wasted "+ timeTillNextBeat);
+  //   requestAnimationFrame(highlightBeat);
+  //   return;
+  // }
+
+  
+
+  const beatToBlinkFloor = Math.floor(beatToBlink);
+
+  if (lastDrawIdx == beatToBlinkFloor){
+    console.log("error, redraw")
+    runBeat();
+    return;
+   
+  }
+
+  console.log("draw========: "+beatToBlinkFloor+ "remove: "+lastDrawIdx);
+
+
+
+  
+
+  
+
+
+
+  // Restore previous box color to normal
+  if (lastDrawIdx >= 0){
+    const lastDrawBox = scrollContainerDiv.children[lastDrawIdx];
+    if (!lastDrawBox || !lastDrawBox.style) return;
+    lastDrawBox.style.backgroundColor = almostWhite;
+    lastDrawBox.style.color = almostBlack;
+
+  }
+
+    // Change color of current beat's box
+    const beatBox = scrollContainerDiv.children[beatToBlinkFloor];
+    if (!beatBox || !beatBox.style) return;
+  
+    beatBox.style.backgroundColor = almostRed
+    beatBox.style.color = almostWhite;
+  
+  
+  
+
+  lastDrawIdx = beatToBlinkFloor;
+
+
+
+
+  if (needUrgentScroll || beatToBlinkFloor % 4 ==0){
+    beatBox.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start', 
+      inline: 'start'  
+  });
+    needUrgentScroll = false;
+
+  }
+
+
+  runBeat();
+  return;
+
+}
+
 function runBeat(){
 
 
   if (!shouldRunBeat)return;
 
-  const beatResult = getCurrentBeat(audioPlayer.currentTime * 1000);
-  let timeTillNextBeat = Math.max(0, beatResult.remainingTimeTillNextBeatMs);
-  timeTillNextBeat /= audioPlayer.playbackRate;
+  const beatResult = getCurrentBeat((audioPlayer.currentTime) * 1000);
+  const timeToCallPreciseDraw = Math.max(0, beatResult.remainingTimeTillNextBeatMs) / audioPlayer.playbackRate * 0.8;
 
-
-
-  let timeToUpdate;
-
-  if (timeTillNextBeat < (beatResult.beatDuration/audioPlayer.playbackRate)/8){
-    timeToUpdate = 0;
-  }else{
-    timeToUpdate = timeTillNextBeat;
-  }
-
-
-
-  nextHightlightBeatEvent = setTimeout(() => {
-    highlightBeat(beatResult.currentBeatNumber+1, /*shouldScrollAfter*/ beatResult.beatDuration/4)
-  }, timeToUpdate);
-
-
+ 
   nextRunbeatEvent = setTimeout(() => {
-    runBeat();
-  }, timeTillNextBeat*0.88);
+    requestAnimationFrame(()=>{
+      highlightBeat(beatResult.currentBeatNumber+1)
+    });
+  }, timeToCallPreciseDraw);
 
 
 }
@@ -849,10 +870,6 @@ function startAutoRunChords(){
   runBeat()
  
   }
-
-
-
-  
 
 
 
@@ -892,6 +909,10 @@ function enableFunctionality() {
           // For example:
           if (mutation.type === 'attributes' && mutation.attributeName === 'href') {
             updateVideoIdAndChordTable(floatingDiv)
+                // Try hook player every 500ms
+            tryHookCount = 0;
+            hookIntervalId = setInterval(tryHookPlayer, 500);
+
           }
 
 
@@ -910,9 +931,7 @@ function enableFunctionality() {
 
 
 
-    // Try hook player every 500ms
-    tryHookCount = 0;
-    hookIntervalId = setInterval(tryHookPlayer, 500);
+
 
 
 
