@@ -23,8 +23,8 @@
     },
     "content_scripts": [
       {
-        "matches": ["*://music.youtube.com/*","*://www.youtube.com/*","*://www.ufret.jp/*"],
-        "js": ["yt_helpers.js", "content.js"]
+        "matches": ["*://music.youtube.com/*","*://www.youtube.com/*"],
+        "js": ["song_data.js","database_manager.js","ui_manager.js","beat_runner.js",  "hooker.js", "chords_player.js"]
       }
     ],
     "icons": {
