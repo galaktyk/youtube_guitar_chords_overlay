@@ -137,17 +137,20 @@ let currentBox;
 function enableFunctionality() {
 
 
-  
-    console.log(TAG + ": enableFunctionality()");
+   chrome.runtime.sendMessage({ action: "getData" }, (response) => {
+    console.log(response.data)
+    const isCurrentlyEnable = response.data;
+    if(isCurrentlyEnable){
+      chordPlayer = new ChordsPlayer();
+      chordPlayer.init();
+    }
 
-    chordPlayer = new ChordsPlayer();
-    chordPlayer.init();
+    });
 
- 
 
 }
 
-enableFunctionality();
+
 
 
 function disableFunctionality() {
@@ -168,6 +171,18 @@ function disableFunctionality() {
   hooker = null
 
 
+  chrome.runtime.sendMessage({ action: "setData", newData: false }, (response) => {
+    if (response.success) {
+      console.log("Data successfully set in background.");
+  } else {
+      console.log("Failed to set data.");
+  }
+});
+
+
 
 
 }
+
+
+enableFunctionality();

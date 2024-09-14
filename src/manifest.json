@@ -3,6 +3,9 @@
     "name": "YouTube Music Video ID Grabber",
     "version": "1.0",
     "description": "Grabs the YouTube Music video ID and displays it.",
+    "background": {
+      "service_worker": "background.js"
+  },
     "permissions": [
       "storage",
       "activeTab",
