@@ -81,7 +81,8 @@ function getUiHtml()
 
 <p>Video ID: <span id="video-id"</span></p>
 <p>Song name: <span id="song-name"></span></p>
-<p>BPM: <span id="main-bpm"></span></p>
+<p>Song BPM: <span id="main-bpm"></span></p>
+<p>Current BPM: <span id="current-bpm"></span></p>
 <p>capo: <span id="capo"></span></p>
 
 
@@ -178,6 +179,7 @@ class UiManager{
   /** @type {HTMLDivElement} */ #scrollContainerDiv;
   /** @type {HTMLDivElement} */ versionSelector;
   /** @type {HTMLDivElement} */ #mainBpmDiv;
+   /** @type {HTMLDivElement} */ #currentBpmDiv;
   /** @type {HTMLDivElement} */ #capoDiv;
  
   /** @type {HTMLDivElement} */ showChordImageDiv;
@@ -195,6 +197,7 @@ class UiManager{
   constructor() {
 
     this.#floatingDiv = document.createElement('div');
+    makeDraggable(this.#floatingDiv);
     this.#floatingDiv.id = 'floating-div';
     this.#floatingDiv.style.position = 'fixed'; 
     this.#floatingDiv.style.bottom = '20%'; 
@@ -214,6 +217,7 @@ class UiManager{
     this.#songNameDiv = this.#floatingDiv.querySelector("#song-name");
 
     this.#mainBpmDiv = this.#floatingDiv.querySelector("#main-bpm");
+    this.#currentBpmDiv = this.#floatingDiv.querySelector("#current-bpm");
     this.#capoDiv = this.#floatingDiv.querySelector("#capo");    
     this.versionSelector = this.#floatingDiv.querySelector("#version-selector");  
     this.#scrollContainerDiv = this.#floatingDiv.querySelector("#chords-scroll-container")
@@ -249,7 +253,7 @@ class UiManager{
     });
   
     // Add drag-and-drop functionality
-    makeDraggable(this.#floatingDiv);
+    
   
     // Append the new div to the body
     document.body.appendChild(this.#floatingDiv);
@@ -371,6 +375,10 @@ class UiManager{
     this.reRenderVersionSelector();
     this.reRenderChords();
 
+  }
+
+  updateCurrentBpm(bpm){
+    this.#currentBpmDiv.textContent = bpm;
   }
 
 

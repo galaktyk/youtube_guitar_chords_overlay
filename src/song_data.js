@@ -46,6 +46,8 @@ class ChordData{
         this.startChord = getFieldValue(chordVersionMap.mapValue.fields.start_chord) * 1000;
         
         const tempoChangeString = getFieldValue(chordVersionMap.mapValue.fields.tempo_change);
+
+        this.tempoChangeList = [];
       
         this.tempoChangeList = JSON.parse(tempoChangeString).map(item => {
             if (item.trim() === "") {
@@ -57,7 +59,7 @@ class ChordData{
         }).filter(item => item !== null);
         
 
-        this.tempoChangeList = [];
+        
         this.tempoChangeList.push({ beatNumber:0, bpm:this.mainBpm})
         this.tempoChangeList.sort((a, b) => a.beatNumber - b.beatNumber);
       

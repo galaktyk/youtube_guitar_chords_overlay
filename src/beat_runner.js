@@ -136,7 +136,7 @@ class BeatRunner
         let currentBPM = currentChordVersion.mainBpm;
 
 
-        let totalTime = 0;
+        
         let previousBeatNumber = 0;
 
         
@@ -157,9 +157,13 @@ class BeatRunner
         const adjustedCurrentTimeMs = currentTimeMs - startChordTimeMs;
       
         if (!tempoChange) return null;
+
+
+        let timeBeforeSegment = 0;
       
         // Iterate through each tempo change event
         for (let i =0; i<tempoChange.length;i++) {
+
             const change = tempoChange[i];
             const { beatNumber, bpm: newBPM } = change;
             const beatDuration = this.getBeatDuration(currentBPM);
@@ -167,11 +171,12 @@ class BeatRunner
       
             // Calculate total time for the beats up to the next tempo change
             const segmentTime = beatsPassed * beatDuration;
+
       
             // Check if the adjusted current time falls within this segment
-            if (adjustedCurrentTimeMs <= totalTime + segmentTime) {
+            if (adjustedCurrentTimeMs <= timeBeforeSegment + segmentTime) {
                 // Calculate the current beat within this segment
-                const timeIntoSegment = adjustedCurrentTimeMs - totalTime;
+                const timeIntoSegment = adjustedCurrentTimeMs - timeBeforeSegment;
                 const beatOffset = timeIntoSegment / beatDuration;
                 const currentBeatNumber = previousBeatNumber + beatOffset;
                 
@@ -179,26 +184,30 @@ class BeatRunner
                 const nextBeatPosition = Math.ceil(beatOffset);
                 const nextBeatTime = nextBeatPosition * beatDuration;
                 const timeToNextBeat = nextBeatTime - timeIntoSegment;
+
       
                 return { "currentBeatNumber":currentBeatNumber, "remainingTimeTillNextBeatMs": timeToNextBeat };
             }
       
             // Update total time and BPM for the next segment
-            totalTime += segmentTime;
+            timeBeforeSegment += segmentTime;
             previousBeatNumber = beatNumber;
             currentBPM = newBPM;
+            if(uiManager){uiManager.updateCurrentBpm(newBPM);}
+            
+
         }
       
         // If the adjusted current time is beyond the last tempo change, handle it here
         const finalBeatDuration =  this.getBeatDuration(currentBPM);
-        const beatsPassed = (adjustedCurrentTimeMs - totalTime) / finalBeatDuration;
+        const beatsPassed = (adjustedCurrentTimeMs - timeBeforeSegment) / finalBeatDuration;
         const finalBeatNumber = previousBeatNumber + beatsPassed;
       
         // Calculate remaining time till the next beat
-        const timeIntoFinalSegment = (adjustedCurrentTimeMs - totalTime) % finalBeatDuration;
+        const timeIntoFinalSegment = (adjustedCurrentTimeMs - timeBeforeSegment) % finalBeatDuration;
         const timeToNextBeat = finalBeatDuration - timeIntoFinalSegment;
       
-        return { "currentBeatNumber": finalBeatNumber, "remainingTimeTillNextBeatMs": timeToNextBeat ,"beatDuration":finalBeatDuration};
+        return { "currentBeatNumber": finalBeatNumber, "remainingTimeTillNextBeatMs": timeToNextBeat};
       }
       
 
@@ -216,7 +225,6 @@ class BeatRunner
             return;
             
         }
-
 
         uiManager.onHighlightBeat(this.lastDrawIdx, beatToBlinkFloor, this.needUrgentScroll);
 
@@ -238,11 +246,11 @@ class BeatRunner
 
 
         if (!this.shouldRunBeat) return;
+        
 
         const beatResult = this.getCurrentBeat((globalAudioPlayer.currentTime) * 1000);
-        const timeToCallPreciseDraw = Math.max(0, beatResult.remainingTimeTillNextBeatMs) / globalAudioPlayer.playbackRate;
+        const timeToCallPreciseDraw = Math.max(0, beatResult.remainingTimeTillNextBeatMs) / globalAudioPlayer.playbackRate * 0.9;
 
-        console.log(TAG+timeToCallPreciseDraw);
 
 
         this.nextRunbeatEvent = setTimeout(() => {
