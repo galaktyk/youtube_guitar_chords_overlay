@@ -137,6 +137,7 @@ class ChordsPlayer{
 
     
     uiManager.updateSongData(videoId);
+    uiManager.requestScroll(0);
     beatRunner.init();
 
 

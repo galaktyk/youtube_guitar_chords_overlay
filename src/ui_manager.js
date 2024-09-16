@@ -593,6 +593,23 @@ clearUi(){
   }
 
 
+  requestScroll(boxIndex){
+
+
+    const targetBox = this.#scrollContainerDiv.children[boxIndex];
+    if(!targetBox) return;
+
+      targetBox.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start', 
+        inline: 'start'  
+      })
+   
+
+
+  }
+
+
   onHighlightBeat(lastDrawBoxIdx,currentDrawBoxIdx,needUrgentScroll){
     
 
@@ -600,6 +617,8 @@ clearUi(){
     if (lastDrawBoxIdx >= 0){
       lastDrawBox = this.#scrollContainerDiv.children[lastDrawBoxIdx];
     }
+
+
     currentBox = this.#scrollContainerDiv.children[currentDrawBoxIdx];
 
     if (!currentBox) return;
@@ -607,15 +626,15 @@ clearUi(){
     requestAnimationFrame(this.draw);
 
 
+
+
     if (needUrgentScroll || currentDrawBoxIdx % 4 == 0){
-      currentBox.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start', 
-      inline: 'start'  
-    });
+        this.requestScroll(currentDrawBoxIdx);
+    };
 
 
-    }
+
+    
     return;
     
   }
