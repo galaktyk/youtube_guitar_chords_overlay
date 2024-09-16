@@ -1,8 +1,17 @@
 const TAG = "ChordsPlayer: ";
 
+function generateRandomUUID6() {
+  // Generate a random number
+  const randomNum = Math.floor(Math.random() * 0xFFFFFF);
+  // Convert the number to a base-36 string (0-9a-z)
+  const base36String = randomNum.toString(36);
+  // Pad the string to ensure it has exactly 6 characters
+  return base36String.padStart(6, '0');
+}
 
-
-
+function deepCopyArray(array) {
+  return JSON.parse(JSON.stringify(array));
+}
 
 
 
@@ -64,6 +73,33 @@ class ChordsPlayer{
   {
     console.log(TAG + 'onCloseButton')
     disableFunctionality();
+  }
+
+  onCreateButton()
+  {
+    console.log(TAG + 'onCreateButton')
+
+
+    if (globalSongData.chordVersionList.length > 0) {
+      console.log("duplicate data"+selectingChordVersion )
+      const dupData = deepCopyArray(globalSongData.chordVersionList[selectingChordVersion]);
+      dupData.versionName = generateRandomUUID6();
+      const newSize = globalSongData.chordVersionList.push(dupData)
+      selectingChordVersion = newSize-1;
+
+          
+      uiManager.reRenderVersionSelector();
+      //suiManager.reRenderChords();
+
+      uiManager.setSelectVersion(selectingChordVersion);
+      console.log("update index to " + selectingChordVersion)
+    }
+    else{
+      console.log("no data to create")
+    }
+
+
+    
   }
 
 

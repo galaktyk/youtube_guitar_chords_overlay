@@ -133,6 +133,12 @@ class BeatRunner
       
         const currentChordVersion = globalSongData.chordVersionList[selectingChordVersion];
 
+        if (!currentChordVersion) {
+            console.log("currentChordVersion not found")
+            return { "currentBeatNumber":-1, "remainingTimeTillNextBeatMs": Infinity };
+        }
+            
+
         let currentBPM = currentChordVersion.mainBpm;
 
 

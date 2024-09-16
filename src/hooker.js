@@ -136,20 +136,30 @@ class Hooker{
   
       // First check.
       if (globalAudioPlayer.paused){
+        if (globalAudioPlayer){
+          beatRunner.handlePause(globalAudioPlayer.currentTime);
+        }
   
-        beatRunner.handlePause(globalAudioPlayer.currentTime);
+        
   
       } else if (!globalAudioPlayer.paused){
 
         console.log(TAG+ "onHookPlayerSuccess: player already playing")
+
+        if (globalAudioPlayer){
+          beatRunner.handlePlay(globalAudioPlayer.currentTime);
+        }
   
-        beatRunner.handlePlay(globalAudioPlayer.currentTime);
+       
       }
   
       
       globalAudioPlayer.onplaying = () => {
         console.log(TAG+ "onHookPlayerSuccess: player playing")
+
+        if (globalAudioPlayer){
         beatRunner.handlePlay(globalAudioPlayer.currentTime);
+        }
       }
   
        
@@ -157,12 +167,16 @@ class Hooker{
   
       globalAudioPlayer.onpause= () => {
         console.log(TAG+ "onHookPlayerSuccess: player paused")
+        if (globalAudioPlayer){
         beatRunner.handlePause(globalAudioPlayer.currentTime);
+        }
       }
   
       globalAudioPlayer.onseeked= () => {
         console.log(TAG+ "onHookPlayerSuccess: player seeked")
+        if (globalAudioPlayer){
         beatRunner.handleSeek(globalAudioPlayer.currentTime);
+        }
       }
   
     }
