@@ -104,9 +104,11 @@ class ChordsPlayer{
 
 
 
+
+
   async onOpenNewVideo(destinationUrl)
   {
-      if(!databaseManager) return;
+     
 
 
     let newUrl;
@@ -124,11 +126,22 @@ class ChordsPlayer{
 
 
     const videoId = newUrl.searchParams.get('v');
-    if (!videoId) return;
+
+
+    if (!videoId) {
+      destroyAllUi();
+      return;
+    };
+
+    if (!chordPlayer){
+      wakeUp();
+    }
 
     console.log(TAG + 'onOpenNewVideo: '+videoId)
 
     selectingChordVersion = 0;
+
+  
 
     globalSongData = await databaseManager.fetchSongFromDatabase(videoId);
 
@@ -173,6 +186,32 @@ let hooker
 let lastDrawBox;
 let currentBox;
 
+
+function wakeUp() {
+  chordPlayer = new ChordsPlayer();
+  chordPlayer.init();
+
+}
+
+
+function destroyAllUi() {
+  hooker.unhookPlayer();
+  beatRunner.stopAutoRunChords();
+  uiManager.removeFloatingDiv();
+  beatRunner = null
+  uiManager = null
+  lastDrawBox = null
+  currentBox= null
+  chordPlayer = null
+  databaseManager = null
+  hooker = null
+
+}
+
+
+
+
+
 function enableFunctionality() {
 
   console.log("enableFunctionality")
@@ -182,8 +221,7 @@ function enableFunctionality() {
     console.log(response.data)
     const isCurrentlyEnable = response.data;
     if(isCurrentlyEnable){
-      chordPlayer = new ChordsPlayer();
-      chordPlayer.init();
+      wakeUp();
     }
 
     });
@@ -192,25 +230,9 @@ function enableFunctionality() {
 }
 
 
-
-
 function disableFunctionality() {
 
-  hooker.unhookPlayer();
-
-  beatRunner.stopAutoRunChords();
-  beatRunner = null
-
-  uiManager.removeFloatingDiv();
-  uiManager = null
-  lastDrawBox = null
-  currentBox= null
-
-  chordPlayer = null
-  
-  databaseManager = null
-  hooker = null
-
+  destroyAllUi()
 
   chrome.runtime.sendMessage({ action: "setData", newData: false }, (response) => {
     if (response.success) {
