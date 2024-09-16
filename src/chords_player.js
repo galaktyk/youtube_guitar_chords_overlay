@@ -128,13 +128,15 @@ class ChordsPlayer{
 
     console.log(TAG + 'onOpenNewVideo: '+videoId)
 
+    selectingChordVersion = 0;
+
     globalSongData = await databaseManager.fetchSongFromDatabase(videoId);
 
 
     console.log(globalSongData)
 
     
-    uiManager.updateSongData(globalSongData, videoId);
+    uiManager.updateSongData(videoId);
     beatRunner.init();
 
 
@@ -171,6 +173,8 @@ let lastDrawBox;
 let currentBox;
 
 function enableFunctionality() {
+
+  console.log("enableFunctionality")
 
 
    chrome.runtime.sendMessage({ action: "getData" }, (response) => {

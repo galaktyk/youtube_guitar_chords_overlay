@@ -111,7 +111,13 @@ function getUiHtml()
 
 <div style="display:flex; flex-direction: row">
 Select chords version: <select id="version-selector" style="width: fit-content;"></select>
+ <input id="version-name-input" style="width:200px">
+
+ <button id="cancel-create-button" style="width: fit-content;">❌</button>
+ <button id="edit-version-name-button" style="width: fit-content;">📝Rename</button>
+ <button id="bin-button" style="width: fit-content;">🗑️Delete version</button>
 <button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
+
 <button id="upload-button" title="Upload this version to cloud database" style="width: fit-content;">⬆️Upload</button>
 </div>
 
@@ -273,7 +279,7 @@ class UiManager{
     this.#floatingDiv.style.bottom = '20%'; 
     this.#floatingDiv.style.left = '10%';
     this.#floatingDiv.style.width = '800px';
-    this.#floatingDiv.style.height = '200px';
+    this.#floatingDiv.style.height = '260px';
     this.#floatingDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'; 
     this.#floatingDiv.style.border = '2px solid';
     this.#floatingDiv.style.borderColor = almostRed; 
@@ -456,7 +462,7 @@ class UiManager{
           return `
           <div class="chord-box" id="chord-box-${index}" beatNumber="${index}">
             <div class="${chordTextClass}">${chord}</div>
-            ${!this.showChordImage ? "" : `<img class="chord-icon" src="${chrome.runtime.getURL("chord_icons/" + chord.replace("#", "s") + ".svg")}" />`}
+            ${!this.showChordImage ? "" : `<img class="chord-icon" src="${chrome.runtime.getURL("chord_icons/" + chord.replaceAll("#", "s").replaceAll("/", "_") + ".svg")}" />`}
           </div>`;
 
         }
@@ -512,6 +518,7 @@ class UiManager{
 
   updateSecretDiv(){
     const chordData = globalSongData.chordVersionList[this.versionSelector.selectedIndex]
+    if (!chordData) return;
 
     this.tempoChangeDiv.innerHTML = JSON.stringify(chordData.tempoChangeList.map(obj => `${obj.beatNumber},${obj.bpm}`));
     this.rawChordsDiv.innerHTML = chordData.chords.join(",")
@@ -535,22 +542,33 @@ class UiManager{
       // Add any additional logic you need here
   }
 }
+
+clearUi(){
+
+  this.#songNameDiv.textContent = "Not found";
+  this.#videoIdDiv.textContent = "";
+  this.#mainBpmDiv.textContent =  "";
+  this.#capoDiv.value =  "";
+  this.#currentBpmDiv.textContent =  "";
+}
   
 
-  updateSongData(songData, videoId){
+  updateSongData(videoId){
 
-    if (!songData) return;
+    this.clearUi();
+
+    if (!globalSongData) return;
 
 
     this.#videoIdDiv.textContent = videoId;
-    this.#songNameDiv.textContent = songData.songName;
-
-
-    globalSongData = songData;
+    this.#songNameDiv.textContent = globalSongData.songName;
+    
 
     
     this.reRenderVersionSelector();
     this.reRenderChords();
+    this.updateSecretDiv();
+
 
   }
 
