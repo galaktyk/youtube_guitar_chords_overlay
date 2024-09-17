@@ -287,6 +287,18 @@ class BeatRunner
     }
 
 
+    destroy(){
+
+        this.stopAutoRunChords();
+        try{
+            this.hooker.unhookPlayer();
+            this.hooker=null;
+        }catch(e){}
+
+
+    }
+
+
 
 
 }

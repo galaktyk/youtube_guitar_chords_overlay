@@ -1,5 +1,8 @@
 const TAG = "ChordsPlayer: ";
 
+
+
+
 function generateRandomUUID6() {
   // Generate a random number
   const randomNum = Math.floor(Math.random() * 0xFFFFFF);
@@ -18,7 +21,7 @@ function deepCopyArray(array) {
 class ChordsPlayer{
 
   // Managers
-  lastUrl;
+  lastVideoId;
 
   
   constructor(){
@@ -81,9 +84,15 @@ class ChordsPlayer{
 
 
     if (globalSongData.chordVersionList.length > 0) {
+
+      const newName = uiManager.createPopup("Enter version name");
+   
+
+      if (!newName) return;
+
       console.log("duplicate data"+selectingChordVersion )
       const dupData = deepCopyArray(globalSongData.chordVersionList[selectingChordVersion]);
-      dupData.versionName = generateRandomUUID6();
+      dupData.versionName = newName;
       const newSize = globalSongData.chordVersionList.push(dupData)
       selectingChordVersion = newSize-1;
 
@@ -119,25 +128,24 @@ class ChordsPlayer{
       newUrl = new URL(window.location.href);
     }
 
-      
-    if (newUrl == this.lastUrl) return;
-    this.lastUrl = newUrl;
-
-
+    console.log(TAG + 'onOpenNewVideo: '+newUrl)
 
     const videoId = newUrl.searchParams.get('v');
 
+      
+    if (videoId === this.lastVideoId) 
+      {
+        console.log("same videoId ignore")
+        return;
+      }
+    this.lastVideoId = videoId;
 
-    if (!videoId) {
-      destroyAllUi();
-      return;
-    };
 
-    if (!chordPlayer){
-      wakeUp();
-    }
 
-    console.log(TAG + 'onOpenNewVideo: '+videoId)
+    
+
+
+    
 
     selectingChordVersion = 0;
 
@@ -191,13 +199,20 @@ function wakeUp() {
   chordPlayer = new ChordsPlayer();
   chordPlayer.init();
 
+  chordPlayer.onOpenNewVideo();
+
 }
 
 
 function destroyAllUi() {
-  hooker.unhookPlayer();
-  beatRunner.stopAutoRunChords();
-  uiManager.removeFloatingDiv();
+  console.log(TAG+"destroyAllUi")
+  try{
+    beatRunner.destroy();
+    uiManager.destroy();
+  }catch(e){
+    console.log(e)
+  }
+
   beatRunner = null
   uiManager = null
   lastDrawBox = null
@@ -213,39 +228,21 @@ function destroyAllUi() {
 
 
 function enableFunctionality() {
-
-  console.log("enableFunctionality")
-
-
-   chrome.runtime.sendMessage({ action: "getData" }, (response) => {
-    console.log(response.data)
-    const isCurrentlyEnable = response.data;
-    if(isCurrentlyEnable){
-      wakeUp();
-    }
-
-    });
+  if (!chordPlayer) {
+    wakeUp();
+  }
+  else{
+    console.log("switch video!")
+    chordPlayer.onOpenNewVideo();
+  }
+  
 
 
 }
 
 
 function disableFunctionality() {
-
   destroyAllUi()
-
-  chrome.runtime.sendMessage({ action: "setData", newData: false }, (response) => {
-    if (response.success) {
-      console.log("Data successfully set in background.");
-  } else {
-      console.log("Failed to set data.");
-  }
-});
-
-
-
-
 }
-
 
 enableFunctionality();

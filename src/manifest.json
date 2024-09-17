@@ -1,19 +1,24 @@
 {
     "manifest_version": 3,
-    "name": "YouTube Music Video ID Grabber",
+    "name": "Guitar Chords Player",
     "version": "1.0",
-    "description": "Grabs the YouTube Music video ID and displays it.",
-    "background": {
-      "service_worker": "background.js"
-  },
+    "description": "Show guitar chords for youtube/youtube music.",
+
+
     "permissions": [
       "storage",
       "activeTab",
-      "scripting"
+      "scripting",
+      "windows",
+      "tabs"
     ],
+
+    "background": {
+        "service_worker": "background.js"
+    },
     "web_accessible_resources": [{
-    "matches": ["<all_urls>"],
-    "resources": ["*.svg"]
+      "matches": ["<all_urls>"],
+      "resources": ["*.svg"]
 }],
 
     "action": {
@@ -26,7 +31,7 @@
     },
     "content_scripts": [
       {
-        "matches": ["*://music.youtube.com/*","*://www.youtube.com/*"],
+        "matches": ["<all_urls>"],
         "js": ["song_data.js","database_manager.js","ui_manager.js","beat_runner.js",  "hooker.js", "chords_player.js"]
       }
     ],

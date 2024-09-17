@@ -2,6 +2,9 @@ const almostBlack = "#1d1d1d"
 const almostWhite = "#e8e9ec"
 const almostRed = "#C63C51"
 
+
+
+
 function getUiHtml()
 {
 
@@ -19,7 +22,8 @@ function getUiHtml()
 
   input{
   background: none;
-  color:${almostWhite}
+  color:${almostWhite};
+  border:1px solid white;
   }
 
 
@@ -83,6 +87,15 @@ function getUiHtml()
   align-items: center;
   height: 100%;
 }
+    .beat-number-preview {
+  position: absolute;
+  font-weight: 100;
+  color: #6D972E;
+  top: 4px;
+  left: 4x;
+  font-size: 9px;
+
+}
 
 
   .chord-icon{
@@ -100,25 +113,40 @@ function getUiHtml()
 
 </style>
 
-<button id="close-button" style="position: absolute; right:0; top:0">X</button>
 
-<p>Video ID: <span id="video-id"</span></p>
-<p>Song name: <span id="song-name"></span></p>
-<p>Song BPM: <span id="main-bpm"></span></p>
-<p>Current BPM: <span id="current-bpm"></span></p>
-<p>capo: <input id="capo" style="width: 50px" disabled></p>
+<div id="top-wrapper" style="display:flex; flex-direction: row; justify-content: space-between; align-items: center">
+  <div id="song-info" style="display:flex; flex-direction: column">
+    <div>Video ID: <span id="video-id"></span></div>
+    <div>Song name: <span id="song-name"></span></div>
+    <div>Song BPM: <span id="main-bpm"></span></div>
+    <div>Current BPM: <span id="current-bpm"></span></div>
+    <div>capo: <input id="capo" style="width: 50px" disabled></div>
+  </div> 
+
+  <div id="player-div" style="display:flex; flex-direction: row">
+      <button id="reverse-button" style="width: fit-content;">⏪</button>
+      <button id="play-button" style="width: fit-content;">▶️</button>
+      <button id="forward-button" style="width: fit-content;">⏩</button>
+
+      
+
+
+  </div>
+</div>
+
 
 
 <div style="display:flex; flex-direction: row">
 Select chords version: <select id="version-selector" style="width: fit-content;"></select>
- <input id="version-name-input" style="width:200px">
-
- <button id="cancel-create-button" style="width: fit-content;">❌</button>
- <button id="edit-version-name-button" style="width: fit-content;">📝Rename</button>
- <button id="bin-button" style="width: fit-content;">🗑️Delete version</button>
 <button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
 
-<button id="upload-button" title="Upload this version to cloud database" style="width: fit-content;">⬆️Upload</button>
+
+</div>
+
+<div id="secret-button" style="display:none">
+    <button id="edit-version-name-button" style="width: fit-content;">📝Rename</button>
+     <button id="bin-button" style="width: fit-content;">🗑️Delete version</button>
+    <button id="upload-button" title="Upload this version to cloud database" style="width: fit-content;">⬆️Upload</button>
 </div>
 
 
@@ -131,13 +159,19 @@ Select chords version: <select id="version-selector" style="width: fit-content;"
 </label>
 
 
+<div>
 
-<div id="chords-scroll-wrapper" style='flex:1; overflow:auto; height:70%'>
+  <button id="hor-button" title="Horizontal mode" style="width: fit-content;">🔤</button>
+  <button id="ver-button" title="Vertical mode" style="width: fit-content;">🔡</button>
+</div>
+
+
+
+<div id="chords-scroll-wrapper" style='overflow:auto; resize:horizontal'>
 <div id="chords-scroll-container"></div>
 </div>
 
 
-<br>
 <div id="secret-metadata" style="display:none">
   <label>
       Tempo changes: <div contenteditable="true" id="tempo-change-textbox"></div>
@@ -156,74 +190,6 @@ Select chords version: <select id="version-selector" style="width: fit-content;"
 
   `;
 }
-
-
-
-function makeDraggable(element) {
-
-  // Local variables, let garbage collector handle it
-  let isDragging = false;
-  let startX, startY;
-  let offsetX, offsetY;
-  let requestId;
-
-  element.addEventListener('mousedown', (e) => {
-      // Calculate initial mouse position and offsets relative to the element
-      startX = e.clientX;
-      startY = e.clientY;
-      const rect = element.getBoundingClientRect();
-      offsetX = startX - rect.left;
-      offsetY = startY - rect.top;
-
-      if (offsetY > 50) return;
-      
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-  });
-
-
-// Function to handle the actual update of position
-  function updatePosition(e) {
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-
-    // Set the new position
-    element.style.left = `${newLeft}px`;
-    element.style.top = `${newTop}px`;
-  }
-
-  // Mouse move handler
-  function onMouseMove(e) {
-    if (isDragging) {
-        // Cancel the previous animation frame request if it exists
-        if (requestId) {
-            cancelAnimationFrame(requestId);
-        }
-
-        // Request a new animation frame
-        requestId = requestAnimationFrame(() => updatePosition(e));
-    }
-  }
-
-
-    function onMouseUp() {
-        if (isDragging) {
-        isDragging = false;
-        }
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    // Start dragging only when mouse moves a significant distance
-    element.addEventListener('mousemove', (e) => {
-        const moveX = e.clientX - startX;
-        const moveY = e.clientY - startY;
-        if (!isDragging && (Math.abs(moveX) > 5 || Math.abs(moveY) > 5)) {
-        isDragging = true;
-        }
-    });
-}
-
 
 
 
@@ -256,6 +222,16 @@ class UiManager{
   /** @type {HTMLDivElement} */ tempoChangeDiv;
   /** @type {HTMLDivElement} */ rawChordsDiv;
   /** @type {HTMLDivElement} */ secretMetadataDiv;
+  secretButtonDiv;
+
+
+  horButton;
+  verButton;
+
+  pipWindow;
+
+
+  smallDiv;
 
 
 
@@ -271,24 +247,14 @@ class UiManager{
   constructor() {
 
     this.#floatingDiv = document.createElement('div');
-    makeDraggable(this.#floatingDiv);
     this.#floatingDiv.id = 'floating-div';
-    this.#floatingDiv.style.position = 'fixed'; 
+    this.#floatingDiv.style.width = '100%';
+    this.#floatingDiv.style.height = '100%';
     this.#floatingDiv.style.flexDirection = 'column';
     this.#floatingDiv.style.display = "flex";
-    this.#floatingDiv.style.bottom = '20%'; 
-    this.#floatingDiv.style.left = '10%';
-    this.#floatingDiv.style.width = '800px';
-    this.#floatingDiv.style.height = '260px';
-    this.#floatingDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'; 
-    this.#floatingDiv.style.border = '2px solid';
-    this.#floatingDiv.style.borderColor = almostRed; 
-    this.#floatingDiv.style.zIndex = '9999'; 
-    this.#floatingDiv.style.resize = 'both';
+    this.#floatingDiv.style.backgroundColor = almostBlack; 
     this.#floatingDiv.style.overflow = 'auto'; 
-
-    this.#floatingDiv.style.userSelect = 'none';
-
+    this.#floatingDiv.style.fontSize = '14px'
 
 
     this.#floatingDiv.innerHTML = getUiHtml();
@@ -309,8 +275,28 @@ class UiManager{
 
 
     this.secretMetadataDiv = this.#floatingDiv.querySelector("#secret-metadata");
+    this.secretButtonDiv = this.#floatingDiv.querySelector("#secret-button");
     this.tempoChangeDiv = this.#floatingDiv.querySelector("#tempo-change-textbox");
     this.rawChordsDiv = this.#floatingDiv.querySelector("#raw-chords-textbox");
+
+
+
+    this.horButton = this.#floatingDiv.querySelector("#hor-button");
+    
+
+
+    this.horButton.addEventListener('click', ()=> {
+      this.#scrollContainerDiv.style.flexWrap = 'nowrap';
+    });
+
+
+    this.verButton = this.#floatingDiv.querySelector("#ver-button");
+
+    this.verButton.addEventListener('click', ()=> {
+      this.#scrollContainerDiv.style.flexWrap = 'wrap';
+    });
+
+
     
     
 
@@ -333,12 +319,7 @@ class UiManager{
       
 
     });
-    this.#floatingDiv.querySelector("#close-button").addEventListener('click',  ()=> {
 
-      chordPlayer.onCloseButton();
-
-      
-    });
     this.#floatingDiv.querySelector("#create-button").addEventListener('click',  ()=> {
 
       chordPlayer.onCreateButton();
@@ -354,53 +335,75 @@ class UiManager{
       this.reRenderChords();
     });
 
+
+
+
+
+
+
+    
+
     
 
   }
+
+
+  createPopup(message) {
+    return this.pipWindow.prompt(message);
+  }
+
+
 
 
 
   async injectUi() {
 
+   
+    this.smallDiv = document.createElement('div');
+    this.smallDiv.id = 'small-div';
+    this.smallDiv.innerHTML = `
+    <div style="position: absolute; top: 5rem; left: 61%;z-index: 999;">
+      <button id="pip-button">🎸</button>
 
-  
-    // Add drag-and-drop functionality
-    
-  
-    // Append the new div to the body
-    document.body.appendChild(this.#floatingDiv);
+    </div>
+    `
 
-    
+    document.body.append(this.smallDiv);
 
-    // When window is resized
-    const resizeObserver = new ResizeObserver(entries => {
-      if (!this.#scrollContainerDiv || !this.#scrollContainerDiv.children[0]) return;
+    this.smallDiv.querySelector("#pip-button").addEventListener('click', ()=> {
 
-      for (let entry of entries) {
-          const { height } = entry.contentRect;
+      this.shouwPip();
 
-          if (height > this.#scrollContainerDiv.children[0].clientHeight*4) {
-            this.#scrollContainerDiv.style.flexWrap = "wrap";
-          }else{
-            this.#scrollContainerDiv.style.flexWrap = "nowrap";
-          }
-      }
+      
     });
 
-    resizeObserver.observe(this.#floatingDiv);
 
+  }
+
+
+
+  async shouwPip(){
+
+    this.pipWindow =  await documentPictureInPicture.requestWindow({disallowReturnToOpener: true, width: 750, height: 200});
+    this.pipWindow.document.body.append(this.#floatingDiv);
+    this.pipWindow.document.body.style.backgroundColor = almostBlack;
+
+
+
+    this.pipWindow.addEventListener("pagehide", (event) => {
+      destroyAllUi();
+    });
 
 
   }
 
-  removeFloatingDiv(){
 
-    document.body.removeChild(this.#floatingDiv);
-  }
+
+
+
 
 
   setSelectVersion(newVersionToSelect){
-
     this.versionSelector.selectedIndex = newVersionToSelect;
   }
 
@@ -448,6 +451,7 @@ class UiManager{
 
           return `
           <div class="chord-box" id="chord-box-${index}" beatNumber="${index}">
+            <div class="beat-number-preview">${index}</div>
             <input class="chord-text-input" value="${chord}">
             </div>`;
 
@@ -505,7 +509,7 @@ class UiManager{
 
     this.#mainBpmDiv.textContent = chordData.mainBpm;
     this.#capoDiv.value = chordData.capo;
-    console.log("set new capo to ", chordData.capo, "from version "+selectingChordVersion);
+
   
     //apply style
     this.#scrollContainerDiv.style.display = "flex";
@@ -643,6 +647,7 @@ clearUi(){
   turnOnEditMode(){
     this.#capoDiv.disabled = false;
     this.reRenderChords();
+    this.secretButtonDiv.style.display = "block";
     this.secretMetadataDiv.style.display = "block";
 
   }
@@ -650,8 +655,15 @@ clearUi(){
   turnOffEditMode(){
     this.#capoDiv.disabled = true;
     this.reRenderChords();
+    this.secretButtonDiv.style.display = "none";
     this.secretMetadataDiv.style.display = "none";
 
+  }
+
+
+  destroy(){
+    this.clearUi();
+    this.#floatingDiv = null;
   }
 
 
