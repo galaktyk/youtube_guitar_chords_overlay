@@ -228,7 +228,7 @@ class UiManager{
   horButton;
   verButton;
 
-  pipWindow;
+  pipWindow = null;
 
 
   smallDiv;
@@ -356,7 +356,9 @@ class UiManager{
 
 
 
-  async injectUi() {
+  async injectGuitarButton() {
+
+    if (this.smallDiv) return;
 
    
     this.smallDiv = document.createElement('div');
@@ -370,33 +372,46 @@ class UiManager{
 
     document.body.append(this.smallDiv);
 
-    this.smallDiv.querySelector("#pip-button").addEventListener('click', ()=> {
-
-      this.shouwPip();
-
-      
+    this.smallDiv.querySelector("#pip-button").addEventListener('click', async ()=> {
+      await this.showPip();
+      chordPlayer.onOpenNewSong(null)
     });
 
 
   }
 
+  removeGuitarButton(){
+    if(!this.smallDiv) return;
+    document.body.removeChild(this.smallDiv);
+    this.smallDiv = null;
+  }
 
 
-  async shouwPip(){
 
-    this.pipWindow =  await documentPictureInPicture.requestWindow({disallowReturnToOpener: true, width: 750, height: 200});
+  async showPip(){
+
+    this.pipWindow = await documentPictureInPicture.requestWindow({disallowReturnToOpener: true, width: 750, height: 200});
     this.pipWindow.document.body.append(this.#floatingDiv);
     this.pipWindow.document.body.style.backgroundColor = almostBlack;
 
 
 
     this.pipWindow.addEventListener("pagehide", (event) => {
-      destroyAllUi();
+
+      console.log("pip hide")
+      this.pipWindow = null;
+      //destroyAllUi();
     });
 
 
   }
 
+
+  checkPipReady(){
+    const isPipReady = (this.pipWindow !== null) && (this.pipWindow !== undefined);
+    console.log(TAG+"checkPipReady",isPipReady)
+    return isPipReady
+  }
 
 
 
@@ -559,10 +574,13 @@ clearUi(){
 
   updateSongData(videoId){
 
+    console.log(TAG+"updateSongData", videoId)
+
     this.clearUi();
 
     if (!globalSongData) return;
 
+    console.log(TAG+"setup song data", globalSongData.songName)
 
     this.#videoIdDiv.textContent = videoId;
     this.#songNameDiv.textContent = globalSongData.songName;
@@ -575,6 +593,7 @@ clearUi(){
 
 
   }
+
 
   updateCurrentBpm(bpm){
     this.#currentBpmDiv.textContent = bpm;

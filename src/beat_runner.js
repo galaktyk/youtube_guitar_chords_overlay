@@ -24,12 +24,10 @@ class BeatRunner
 
     constructor(){
       
-        //this.addEventListener('onHookPlayerSuccess', this.onHookPlayerSuccess.bind(this));
-        
     }
 
     init(){
-        hooker.startHooking();
+        
     }
 
 

@@ -42,29 +42,21 @@ class ChordsPlayer{
 
 
 
-    uiManager = new UiManager();
-    beatRunner = new BeatRunner();  
-    databaseManager = new DatabaseManager(
-      "https://firestore.googleapis.com/v1/projects/guitar-chords-873b9/databases/(default)/documents/guitar-chords/"
-    );
 
-    hooker = new Hooker();
 
     if (checkHostType()==HostType.UNDEFINED) return;
     
-    uiManager.injectUi();
-
 
     // Track when change video.
     window.navigation.addEventListener("navigate", (event) => {
       const targetUrl = new URL(event.destination.url)
       console.log(TAG+ "navigate: " + targetUrl)
-      this.onOpenNewVideo(targetUrl);
+      this.onOpenNewTab(targetUrl);
     }
     );
 
      // Track when reload page.
-    window.addEventListener('load', this.onOpenNewVideo.bind(this, null));
+    window.addEventListener('load', this.onOpenNewTab.bind(this, null));
 
 
   }
@@ -114,10 +106,8 @@ class ChordsPlayer{
 
 
 
-
-  async onOpenNewVideo(destinationUrl)
-  {
-     
+  onOpenNewTab(destinationUrl){
+    if (!uiManager || !uiManager.checkPipReady()) return
 
 
     let newUrl;
@@ -128,24 +118,45 @@ class ChordsPlayer{
       newUrl = new URL(window.location.href);
     }
 
-    console.log(TAG + 'onOpenNewVideo: '+newUrl)
+    console.log(TAG + 'onOpenNewTab: '+newUrl)
 
     const videoId = newUrl.searchParams.get('v');
 
-      
+    if(!videoId){
+      console.log(TAG+"no videoId")
+      uiManager.removeGuitarButton();
+
+      return
+    }
+    this.onOpenNewSong(videoId);
+    return;
+  }
+
+
+  async onOpenNewSong(videoId)
+  {
+
+    if (!uiManager || !uiManager.checkPipReady()) return
+    console.log(TAG + 'onOpenNewSong: '+videoId)
+
+    if (!videoId) {
+      const currentUrl = new URL(window.location.href);
+      videoId = currentUrl.searchParams.get('v');
+    }
+
+    if (!videoId) {
+      console.log(TAG+"no videoId")
+      return
+    }
+     
+
     if (videoId === this.lastVideoId) 
       {
-        console.log("same videoId ignore")
+        console.log("same videoId")
         return;
       }
     this.lastVideoId = videoId;
 
-
-
-    
-
-
-    
 
     selectingChordVersion = 0;
 
@@ -159,9 +170,9 @@ class ChordsPlayer{
     
     uiManager.updateSongData(videoId);
     uiManager.requestScroll(0);
-    beatRunner.init();
+    hooker.startHooking();
 
-
+      return;
 
   }
   
@@ -195,54 +206,69 @@ let lastDrawBox;
 let currentBox;
 
 
-function wakeUp() {
+
+
+// function destroyAllUi() {
+//   console.log(TAG+"destroyAllUi")
+//   try{
+//     beatRunner.destroy();
+//     uiManager.destroy();
+//   }catch(e){
+//     console.log(e)
+//   }
+
+//   beatRunner = null
+//   uiManager = null
+//   lastDrawBox = null
+//   currentBox= null
+//   chordPlayer = null
+//   databaseManager = null
+//   hooker = null
+
+// }
+
+
+function start() {
   chordPlayer = new ChordsPlayer();
   chordPlayer.init();
-
-  chordPlayer.onOpenNewVideo();
-
-}
-
-
-function destroyAllUi() {
-  console.log(TAG+"destroyAllUi")
-  try{
-    beatRunner.destroy();
-    uiManager.destroy();
-  }catch(e){
-    console.log(e)
-  }
-
-  beatRunner = null
-  uiManager = null
-  lastDrawBox = null
-  currentBox= null
-  chordPlayer = null
-  databaseManager = null
-  hooker = null
-
-}
-
-
-
-
-
-function enableFunctionality() {
-  if (!chordPlayer) {
-    wakeUp();
-  }
-  else{
-    console.log("switch video!")
-    chordPlayer.onOpenNewVideo();
-  }
   
 
+  uiManager = new UiManager();
+  uiManager.injectGuitarButton();
+
+
+  beatRunner = new BeatRunner();  
+
+  databaseManager = new DatabaseManager(
+    "https://firestore.googleapis.com/v1/projects/guitar-chords-873b9/databases/(default)/documents/guitar-chords/"
+  );
+
+ 
+
+  hooker = new Hooker();
+
+
+  chordPlayer.onOpenNewTab(null);
 
 }
+
 
 
 function disableFunctionality() {
   destroyAllUi()
 }
 
-enableFunctionality();
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'TAB_URL') {
+    const tabUrl = message.url;
+
+    console.log(TAG + "open new tab")
+
+    chordPlayer.onOpenNewTab(tabUrl);
+    
+    // Do something with the URL, e.g., update the content or perform some action
+  }
+});
+
+
+start();
