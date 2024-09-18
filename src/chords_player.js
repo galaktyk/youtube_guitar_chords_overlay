@@ -3,14 +3,6 @@ const TAG = "ChordsPlayer: ";
 
 
 
-function generateRandomUUID6() {
-  // Generate a random number
-  const randomNum = Math.floor(Math.random() * 0xFFFFFF);
-  // Convert the number to a base-36 string (0-9a-z)
-  const base36String = randomNum.toString(36);
-  // Pad the string to ensure it has exactly 6 characters
-  return base36String.padStart(6, '0');
-}
 
 function deepCopyArray(array) {
   return JSON.parse(JSON.stringify(array));
@@ -22,6 +14,8 @@ class ChordsPlayer{
 
   // Managers
   lastVideoId;
+
+
 
   
   constructor(){
@@ -77,7 +71,7 @@ class ChordsPlayer{
 
     if (globalSongData.chordVersionList.length > 0) {
 
-      const newName = uiManager.createPopup("Enter version name");
+      const newName = uiManager.createPopup("Enter your version name");
    
 
       if (!newName) return;
@@ -85,12 +79,16 @@ class ChordsPlayer{
       console.log("duplicate data"+selectingChordVersion )
       const dupData = deepCopyArray(globalSongData.chordVersionList[selectingChordVersion]);
       dupData.versionName = newName;
+      dupData.Uuid = generateRandomUUID(6);
+
+      // Label this as local so it can be deleted without password.
+      dupData.isLocal = true;
       const newSize = globalSongData.chordVersionList.push(dupData)
       selectingChordVersion = newSize-1;
 
           
       uiManager.reRenderVersionSelector();
-      //suiManager.reRenderChords();
+      uiManager.reRenderChords();
 
       uiManager.setSelectVersion(selectingChordVersion);
       console.log("update index to " + selectingChordVersion)
@@ -102,6 +100,92 @@ class ChordsPlayer{
 
     
   }
+
+  async onUploadButton(){
+
+    const chordsData = globalSongData.chordVersionList[selectingChordVersion];
+
+    if (!chordsData.isLocal){
+      const password = uiManager.createPopup("Modify this version data on cloud, please enter your password"); 
+      if (!password) return;
+      // TODO: Send to firebase function, use chordsData.Uuid for checking
+
+
+      return;
+    }
+
+  
+    const password = uiManager.createPopup("This version does not exist in cloud database yet, please enter your password for later modification/deletion"); 
+    if (!password) return;
+
+
+    const hash = await sha256(password);
+    console.log(TAG+"hash password: ", hash)
+
+
+    // TODO: Send to firebase function, use chordsData.Uuid for checking
+    const chordsStringData = JSON.stringify(chordsData);
+    console.log(TAG+chordsStringData)
+
+
+
+  }
+
+  async onDeleteButton(){
+
+    console.log(TAG + "perform delete")
+    console.log(globalSongData.chordVersionList[selectingChordVersion])
+    const chordsData = globalSongData.chordVersionList[selectingChordVersion];
+
+    if (chordsData.isLocal){
+      console.log(TAG + "perform local delete")
+      globalSongData.chordVersionList.splice(selectingChordVersion, 1);
+
+      uiManager.reRenderVersionSelector();
+
+      // force select first available version, use chordsData.Uuid for checking
+      selectingChordVersion = 0;
+      uiManager.setSelectVersion(selectingChordVersion);
+      uiManager.reRenderChords();
+      console.log(TAG + "remove success")
+      return;
+
+
+    }
+
+    const password = uiManager.createPopup("Remove this veersion from cloud database, please enter password for deletion"); 
+    if (!password) return;
+    // TODO: Send to firebase function
+
+
+
+  }
+
+  onRenameButton(){
+
+    const chordsData = globalSongData.chordVersionList[selectingChordVersion];
+
+      if (!chordsData.isLocal){
+        const password = uiManager.createPopup("Rename this version on cloud database requires password");
+
+        // TODO : Send to firebase function
+        return;
+
+    }
+
+
+
+    const newName = uiManager.createPopup("Enter new name");
+    if (!newName) return;
+
+    globalSongData.chordVersionList[selectingChordVersion].versionName = newName;
+    uiManager.reRenderVersionSelector();
+    uiManager.setSelectVersion(selectingChordVersion);
+  }
+
+  
+
+
 
 
 

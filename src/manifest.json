@@ -9,13 +9,9 @@
       "storage",
       "activeTab",
       "scripting",
-      "windows",
-      "tabs"
+      "windows"
     ],
 
-    "background": {
-        "service_worker": "background.js"
-    },
     "web_accessible_resources": [{
       "matches": ["<all_urls>"],
       "resources": ["*.svg"]
@@ -32,7 +28,7 @@
     "content_scripts": [
       {
         "matches": ["*://music.youtube.com/*","*://www.youtube.com/*"],
-        "js": ["song_data.js","database_manager.js","ui_manager.js","beat_runner.js",  "hooker.js", "chords_player.js"]
+        "js": ["utils.js","song_data.js","database_manager.js","ui_manager.js","beat_runner.js",  "hooker.js", "chords_player.js"]
       }
     ],
     "icons": {

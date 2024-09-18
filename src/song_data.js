@@ -38,12 +38,17 @@ class ChordData{
     startChord;
     tempoChangeList;
 
+    isLocal;
+    Uuid;
+
     constructor(chordVersionMap){
     
         this.capo = getFieldValue(chordVersionMap.mapValue.fields.capo);
         this.chords = getFieldValue(chordVersionMap.mapValue.fields.chords).split(',');
         this.mainBpm = getFieldValue(chordVersionMap.mapValue.fields.song_bpm);
+        this.Uuid = getFieldValue(chordVersionMap.mapValue.fields.uuid);
         this.startChord = getFieldValue(chordVersionMap.mapValue.fields.start_chord) * 1000;
+        this.isLocal = false;
         
         const tempoChangeString = getFieldValue(chordVersionMap.mapValue.fields.tempo_change);
 

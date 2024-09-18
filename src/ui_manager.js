@@ -121,17 +121,8 @@ function getUiHtml()
     <div>Song BPM: <span id="main-bpm"></span></div>
     <div>Current BPM: <span id="current-bpm"></span></div>
     <div>capo: <input id="capo" style="width: 50px" disabled></div>
+    <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
   </div> 
-
-  <div id="player-div" style="display:flex; flex-direction: row">
-      <button id="reverse-button" style="width: fit-content;">⏪</button>
-      <button id="play-button" style="width: fit-content;">▶️</button>
-      <button id="forward-button" style="width: fit-content;">⏩</button>
-
-      
-
-
-  </div>
 </div>
 
 
@@ -144,9 +135,9 @@ Select chords version: <select id="version-selector" style="width: fit-content;"
 </div>
 
 <div id="secret-button" style="display:none">
-    <button id="edit-version-name-button" style="width: fit-content;">📝Rename</button>
-     <button id="bin-button" style="width: fit-content;">🗑️Delete version</button>
-    <button id="upload-button" title="Upload this version to cloud database" style="width: fit-content;">⬆️Upload</button>
+    <button id="rename-button" style="width: fit-content;">📝Rename</button>
+     <button id="delete-button" style="width: fit-content;">🗑️Delete version</button>
+    <button id="upload-button" title="Apply and upload this version to cloud database" style="width: fit-content;">💾Save to database</button>
 </div>
 
 
@@ -212,6 +203,7 @@ class UiManager{
   /** @type {HTMLDivElement} */ #mainBpmDiv;
    /** @type {HTMLDivElement} */ #currentBpmDiv;
   /** @type {HTMLDivElement} */ #capoDiv;
+   /** @type {HTMLDivElement} */ #creatorNameDiv;
  
   /** @type {HTMLDivElement} */ showChordImageDiv;
 
@@ -266,6 +258,7 @@ class UiManager{
     this.#mainBpmDiv = this.#floatingDiv.querySelector("#main-bpm");
     this.#currentBpmDiv = this.#floatingDiv.querySelector("#current-bpm");
     this.#capoDiv = this.#floatingDiv.querySelector("#capo");    
+    this.#creatorNameDiv = this.#floatingDiv.querySelector("#creator-name");
     this.versionSelector = this.#floatingDiv.querySelector("#version-selector");  
     this.#scrollContainerDiv = this.#floatingDiv.querySelector("#chords-scroll-container")
 
@@ -297,6 +290,8 @@ class UiManager{
     });
 
 
+
+
     
     
 
@@ -326,6 +321,24 @@ class UiManager{
 
       
     });
+
+    this.#floatingDiv.querySelector("#upload-button").addEventListener('click',  ()=> {
+
+      chordPlayer.onUploadButton();
+    })
+
+    this.#floatingDiv.querySelector("#delete-button").addEventListener('click',  ()=> {
+
+      chordPlayer.onDeleteButton();
+      
+    })
+
+
+    this.#floatingDiv.querySelector("#rename-button").addEventListener('click',  ()=> {
+
+      chordPlayer.onRenameButton();
+
+    })
 
 
     this.versionSelector.addEventListener('change', ()=> {
@@ -435,7 +448,7 @@ class UiManager{
 
     globalSongData.chordVersionList.forEach(chordData => {
       const newOptionElement = document.createElement('option');
-      newOptionElement.textContent = `${chordData.versionName} (by ${chordData.creatorName})`;
+      newOptionElement.textContent = `${chordData.versionName}`;
       this.versionSelector.appendChild(newOptionElement);
     
     });
@@ -524,6 +537,7 @@ class UiManager{
 
     this.#mainBpmDiv.textContent = chordData.mainBpm;
     this.#capoDiv.value = chordData.capo;
+    this.#creatorNameDiv.value = chordData.creatorName;
 
   
     //apply style
@@ -531,6 +545,7 @@ class UiManager{
     this.#scrollContainerDiv.style.flexDirection = "row";
     this.#scrollContainerDiv.style.overflowX = "auto";
     this.#scrollContainerDiv.style.width = "100%";
+
 
     this.updateSecretDiv();
   }
@@ -665,6 +680,7 @@ clearUi(){
 
   turnOnEditMode(){
     this.#capoDiv.disabled = false;
+    this.#creatorNameDiv.disabled = false;
     this.reRenderChords();
     this.secretButtonDiv.style.display = "block";
     this.secretMetadataDiv.style.display = "block";
@@ -673,6 +689,7 @@ clearUi(){
 
   turnOffEditMode(){
     this.#capoDiv.disabled = true;
+    this.#creatorNameDiv.disabled = true;
     this.reRenderChords();
     this.secretButtonDiv.style.display = "none";
     this.secretMetadataDiv.style.display = "none";
