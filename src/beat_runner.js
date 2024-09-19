@@ -39,6 +39,7 @@ class BeatRunner
 
 
     handleChordClick(beatNumber) {
+        if (!beatNumber) return;
         const targetTimeSec =   this.getTimeFromBeatNumber(beatNumber)/1000;
         globalAudioPlayer.currentTime = targetTimeSec + 0.01;
 
@@ -91,8 +92,8 @@ class BeatRunner
       
         // Iterate through each tempo change event
         for (let i = 0; i < tempoChange.length; i++) {
-          const change = tempoChange[i];
-          const [beatNumber,newBPM ] = change;
+          const beatNumber = tempoChange[i][0];
+          const newBPM = tempoChange[i][1];
           const beatDuration = this.getBeatDuration(currentBPM);
           const beatsPassed = beatNumber - previousBeatNumber;
       
@@ -168,8 +169,9 @@ class BeatRunner
         // Iterate through each tempo change event
         for (let i =0; i<tempoChange.length;i++) {
 
-            const change = tempoChange[i];
-            const { beatNumber, bpm: newBPM } = change;
+            const beatNumber = tempoChange[i][0];
+            const newBPM = tempoChange[i][1];
+
             const beatDuration = this.getBeatDuration(currentBPM);
             const beatsPassed = beatNumber - previousBeatNumber;
       
@@ -218,6 +220,8 @@ class BeatRunner
 
     highlightBeat(beatToBlink){
 
+
+
         if (!uiManager) return;
 
 
@@ -240,6 +244,7 @@ class BeatRunner
 
 
 
+
         this.runBeat();
         return;
 
@@ -253,7 +258,8 @@ class BeatRunner
         
 
         const beatResult = this.getCurrentBeat((globalAudioPlayer.currentTime) * 1000);
-        const timeToCallPreciseDraw = Math.max(0, beatResult.remainingTimeTillNextBeatMs) / globalAudioPlayer.playbackRate * 0.9;
+        const timeToCallPreciseDraw = Math.max(0, beatResult.remainingTimeTillNextBeatMs) / globalAudioPlayer.playbackRate * 0.87;
+        
 
 
 

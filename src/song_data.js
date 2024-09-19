@@ -52,16 +52,20 @@ class ChordData{
         
         const tempoChangeString = getFieldValue(chordVersionMap.mapValue.fields.tempo_change);
 
-        this.tempoChangeList = [];
+        
       
         this.tempoChangeList = JSON.parse(tempoChangeString);
 
+        if (!this.tempoChangeList || this.tempoChangeList.length === 0) this.tempoChangeList = [[0, this.mainBpm]];
 
-        if (this.tempoChangeList[0][0] !== 0){
-            this.tempoChangeList.push(0, this.mainBpm)
+        if (this.tempoChangeList.length > 0 && this.tempoChangeList[0][0] !== 0){
+            this.tempoChangeList.push([0, this.mainBpm])
+
         }
+
+
        
-        this.tempoChangeList.sort((a, b) => a.beatNumber - b.beatNumber);
+        this.tempoChangeList.sort((a, b) => a[0] - b[0]);
       
         this.versionName = getFieldValue(chordVersionMap.mapValue.fields.version_name);
 

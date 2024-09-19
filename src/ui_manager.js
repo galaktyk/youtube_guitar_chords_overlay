@@ -484,6 +484,8 @@ class UiManager{
 
 
 
+
+
   /** @param {string[]} chordList */
   reRenderChords(){
 
@@ -507,39 +509,10 @@ class UiManager{
     this.#scrollContainerDiv.innerHTML = 
     chordData.chords
       .map((chordOri, index) => {
-        let chord;
-
-        if (chordOri === "" || this.currentCapoValue == 0) {
-          chord = chordOri;
-        }
-        else{if (chordOri === "N"){
-
-            chord = chordOri;
-          } 
-       
-          // Slash chord
-          else if (chordOri.includes("/")) {
-            
-            const [root1, root2] = chordOri.split("/");
-
-            chord = `${transpose(root1, -this.currentCapoValue, keyType)}/${transpose(root2, -this.currentCapoValue, keyType)}`
-
-          }else{
-
-            
-            const [oriRoot,  quality] = separateChord(chordOri);
-
-            const transposedRoot = transpose(oriRoot, -this.currentCapoValue, keyType);
     
-            chord = `${transposedRoot}${quality}`;
-  
-            console.log("in: ", chordOri, "out: ", transposedRoot, " ",quality) 
-          }
-
-        }
 
 
-        
+        const chord = handleTranspose(chordOri, -this.currentCapoValue, keyType);
 
        
 
@@ -731,6 +704,7 @@ clearUi(){
     if (!currentBox) return;
 
     requestAnimationFrame(this.draw);
+    
 
 
 

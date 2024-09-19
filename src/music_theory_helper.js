@@ -49,3 +49,43 @@ function separateChord(chord) {
     }
     return chord
 }
+
+
+
+
+
+function handleTranspose(chordOri, semitones, keyType) {
+
+
+    if (chordOri === "" || this.currentCapoValue == 0) {
+       
+        return "";
+    }
+
+
+    if (chordOri === "N"){
+
+        return "N";
+    } 
+
+
+
+    // Slash chord
+    if (chordOri.includes("/")) {
+
+        const [root1, root2] = chordOri.split("/");
+        return  `${transpose(root1, semitones, keyType)}/${transpose(root2, semitones, keyType)}`
+    }
+    
+    
+
+    const [oriRoot,  quality] = separateChord(chordOri);
+
+    const transposedRoot = transpose(oriRoot,semitones, keyType);
+
+    return `${transposedRoot}${quality}`;
+
+  
+
+
+}
