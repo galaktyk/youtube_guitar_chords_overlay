@@ -28,7 +28,7 @@
     "content_scripts": [
       {
         "matches": ["*://music.youtube.com/*","*://www.youtube.com/*"],
-        "js": ["utils.js","song_data.js","database_manager.js","ui_manager.js","beat_runner.js",  "hooker.js", "chords_player.js"]
+        "js": ["music_theory_helper.js","utils.js","song_data.js","database_manager.js","ui_manager.js","beat_runner.js",  "hooker.js", "chords_player.js"]
       }
     ],
     "icons": {

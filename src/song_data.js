@@ -32,7 +32,7 @@ class ChordData{
     passwordHash;
 
     versionName;
-    capo;
+    recommendCapo;
     chords;
     mainBpm;
     startChord;
@@ -43,7 +43,7 @@ class ChordData{
 
     constructor(chordVersionMap){
     
-        this.capo = getFieldValue(chordVersionMap.mapValue.fields.capo);
+        this.recommendCapo = getFieldValue(chordVersionMap.mapValue.fields.recommend_capo);
         this.chords = getFieldValue(chordVersionMap.mapValue.fields.chords).split(',');
         this.mainBpm = getFieldValue(chordVersionMap.mapValue.fields.song_bpm);
         this.Uuid = getFieldValue(chordVersionMap.mapValue.fields.uuid);
@@ -54,25 +54,20 @@ class ChordData{
 
         this.tempoChangeList = [];
       
-        this.tempoChangeList = JSON.parse(tempoChangeString).map(item => {
-            if (item.trim() === "") {
-                // Handle the empty string case, you might want to return null or skip it
-                return null;
-            }
-            const [beatNumber, bpm] = item.split(',').map(Number);
-            return { beatNumber, bpm };
-        }).filter(item => item !== null);
-        
+        this.tempoChangeList = JSON.parse(tempoChangeString);
 
-        
-        this.tempoChangeList.push({ beatNumber:0, bpm:this.mainBpm})
+
+        if (this.tempoChangeList[0][0] !== 0){
+            this.tempoChangeList.push(0, this.mainBpm)
+        }
+       
         this.tempoChangeList.sort((a, b) => a.beatNumber - b.beatNumber);
       
         this.versionName = getFieldValue(chordVersionMap.mapValue.fields.version_name);
 
 
         this.creatorName = getFieldValue(chordVersionMap.mapValue.fields.creator_name);
-        if (!this.creatorName) this.creatorName = "Anonymous";
+        if (!this.creatorName) this.creatorName = "anon";
         this.passwordHash = getFieldValue(chordVersionMap.mapValue.fields.password_hash);
        
     }

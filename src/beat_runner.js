@@ -92,7 +92,7 @@ class BeatRunner
         // Iterate through each tempo change event
         for (let i = 0; i < tempoChange.length; i++) {
           const change = tempoChange[i];
-          const { beatNumber, bpm: newBPM } = change;
+          const [beatNumber,newBPM ] = change;
           const beatDuration = this.getBeatDuration(currentBPM);
           const beatsPassed = beatNumber - previousBeatNumber;
       

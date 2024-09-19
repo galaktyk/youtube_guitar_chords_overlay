@@ -65,6 +65,7 @@ function getUiHtml()
 
   .chord-text{
   position: absolute;
+  z-index: 10;
   top: 0;
   width: -webkit-fill-available;
   }
@@ -120,7 +121,7 @@ function getUiHtml()
     <div>Song name: <span id="song-name"></span></div>
     <div>Song BPM: <span id="main-bpm"></span></div>
     <div>Current BPM: <span id="current-bpm"></span></div>
-    <div>capo: <input id="capo" style="width: 50px" disabled></div>
+    <div>recommend capo: <input id="recommend-capo" style="width: 50px" disabled></div>
     <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
   </div> 
 </div>
@@ -139,6 +140,20 @@ Select chords version: <select id="version-selector" style="width: fit-content;"
      <button id="delete-button" style="width: fit-content;">🗑️Delete version</button>
     <button id="upload-button" title="Apply and upload this version to cloud database" style="width: fit-content;">💾Save to database</button>
 </div>
+
+
+Select capo fret: <select id="capo-selector" style="width: fit-content;">
+  <option value="0">0</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+  <option value="6">6</option>
+  <option value="7">7</option>
+  <option value="8">8</option>
+  <option value="9">9</option>
+</select>
 
 
 <label>
@@ -170,7 +185,7 @@ Select chords version: <select id="version-selector" style="width: fit-content;"
 
   <br>
   <label>
-      Raw chords: <div contenteditable="true" id="raw-chords-textbox"></div>
+      Raw chords (in song's original key): <div contenteditable="true" id="raw-chords-textbox"></div>
   </label>
 
 </div>
@@ -202,7 +217,7 @@ class UiManager{
   /** @type {HTMLDivElement} */ versionSelector;
   /** @type {HTMLDivElement} */ #mainBpmDiv;
    /** @type {HTMLDivElement} */ #currentBpmDiv;
-  /** @type {HTMLDivElement} */ #capoDiv;
+  /** @type {HTMLDivElement} */ #recommendCapoDiv;
    /** @type {HTMLDivElement} */ #creatorNameDiv;
  
   /** @type {HTMLDivElement} */ showChordImageDiv;
@@ -214,6 +229,7 @@ class UiManager{
   /** @type {HTMLDivElement} */ tempoChangeDiv;
   /** @type {HTMLDivElement} */ rawChordsDiv;
   /** @type {HTMLDivElement} */ secretMetadataDiv;
+  /** @type {HTMLDivElement} */ capoSelectorDiv;
   secretButtonDiv;
 
 
@@ -224,6 +240,8 @@ class UiManager{
 
 
   smallDiv;
+
+  currentCapoValue = 0;
 
 
 
@@ -257,7 +275,7 @@ class UiManager{
 
     this.#mainBpmDiv = this.#floatingDiv.querySelector("#main-bpm");
     this.#currentBpmDiv = this.#floatingDiv.querySelector("#current-bpm");
-    this.#capoDiv = this.#floatingDiv.querySelector("#capo");    
+    this.#recommendCapoDiv = this.#floatingDiv.querySelector("#recommend-capo");    
     this.#creatorNameDiv = this.#floatingDiv.querySelector("#creator-name");
     this.versionSelector = this.#floatingDiv.querySelector("#version-selector");  
     this.#scrollContainerDiv = this.#floatingDiv.querySelector("#chords-scroll-container")
@@ -271,6 +289,8 @@ class UiManager{
     this.secretButtonDiv = this.#floatingDiv.querySelector("#secret-button");
     this.tempoChangeDiv = this.#floatingDiv.querySelector("#tempo-change-textbox");
     this.rawChordsDiv = this.#floatingDiv.querySelector("#raw-chords-textbox");
+
+    this.capoSelectorDiv = this.#floatingDiv.querySelector("#capo-selector");
 
 
 
@@ -347,6 +367,14 @@ class UiManager{
       console.log("set selectingChordVersion to " + selectingChordVersion)
       this.reRenderChords();
     });
+
+
+    this.capoSelectorDiv.addEventListener('change', ()=> {
+      this.currentCapoValue = Number(this.capoSelectorDiv.value);
+      console.log("set currentCapoValue to " + this.currentCapoValue)
+      this.reRenderChords();
+
+    })
 
 
 
@@ -470,9 +498,50 @@ class UiManager{
 
     if(!chordData) return
 
+
+    // Transpose
+    let keyType = detectKey(chordData.chords); // Detect if we're in a sharp or flat key
+    
+
+
     this.#scrollContainerDiv.innerHTML = 
     chordData.chords
-      .map((chord, index) => {
+      .map((chordOri, index) => {
+        let chord;
+
+        if (chordOri === "" || this.currentCapoValue == 0) {
+          chord = chordOri;
+        }
+        else{if (chordOri === "N"){
+
+            chord = chordOri;
+          } 
+       
+          // Slash chord
+          else if (chordOri.includes("/")) {
+            
+            const [root1, root2] = chordOri.split("/");
+
+            chord = `${transpose(root1, -this.currentCapoValue, keyType)}/${transpose(root2, -this.currentCapoValue, keyType)}`
+
+          }else{
+
+            
+            const [oriRoot,  quality] = separateChord(chordOri);
+
+            const transposedRoot = transpose(oriRoot, -this.currentCapoValue, keyType);
+    
+            chord = `${transposedRoot}${quality}`;
+  
+            console.log("in: ", chordOri, "out: ", transposedRoot, " ",quality) 
+          }
+
+        }
+
+
+        
+
+       
 
         if (this.isEditmode){
 
@@ -536,7 +605,7 @@ class UiManager{
   
 
     this.#mainBpmDiv.textContent = chordData.mainBpm;
-    this.#capoDiv.value = chordData.capo;
+    this.#recommendCapoDiv.value = chordData.recommendCapo;
     this.#creatorNameDiv.value = chordData.creatorName;
 
   
@@ -554,7 +623,7 @@ class UiManager{
     const chordData = globalSongData.chordVersionList[this.versionSelector.selectedIndex]
     if (!chordData) return;
 
-    this.tempoChangeDiv.innerHTML = JSON.stringify(chordData.tempoChangeList.map(obj => `${obj.beatNumber},${obj.bpm}`));
+    this.tempoChangeDiv.innerHTML = JSON.stringify(chordData.tempoChangeList);
     this.rawChordsDiv.innerHTML = chordData.chords.join(",")
   }
 
@@ -582,7 +651,7 @@ clearUi(){
   this.#songNameDiv.textContent = "Not found";
   this.#videoIdDiv.textContent = "";
   this.#mainBpmDiv.textContent =  "";
-  this.#capoDiv.value =  "";
+  this.#recommendCapoDiv.value =  "";
   this.#currentBpmDiv.textContent =  "";
 }
   
@@ -679,7 +748,7 @@ clearUi(){
 
 
   turnOnEditMode(){
-    this.#capoDiv.disabled = false;
+    this.#recommendCapoDiv.disabled = false;
     this.#creatorNameDiv.disabled = false;
     this.reRenderChords();
     this.secretButtonDiv.style.display = "block";
@@ -688,7 +757,7 @@ clearUi(){
   }
 
   turnOffEditMode(){
-    this.#capoDiv.disabled = true;
+    this.#recommendCapoDiv.disabled = true;
     this.#creatorNameDiv.disabled = true;
     this.reRenderChords();
     this.secretButtonDiv.style.display = "none";
