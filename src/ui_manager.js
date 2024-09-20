@@ -123,28 +123,24 @@ function getUiHtml()
   border: 1px dashed ${almostWhite};
   }
 
+textarea{
+  
+  width: -webkit-fill-available;
+  height: 5rem; 
+  resize: none;
+  overflow: auto;
+  
+  }
 
 
 
 </style>
 
 
-<div id="top-wrapper" style="display:flex; flex-direction: row; justify-content: space-between; align-items: center">
-  <div id="song-info" style="display:flex; flex-direction: column">
     <div>Video ID: <span id="video-id"></span></div>
     <div>Song name: <span id="song-name"></span></div>
-    <div>Song BPM: <span id="main-bpm"></span></div>
-    <div>Current BPM: <span id="current-bpm"></span></div>
-  
-    <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
-  </div> 
-</div>
 
 
-
-<div style="display:flex; flex-direction: row">
-  Select chords version: <select id="version-selector" style="width: fit-content;"></select>
-  <button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
 
 
 
@@ -156,10 +152,28 @@ function getUiHtml()
   </div>
 
 
+
+
+<div style="display:flex; flex-direction: row">
+  Select chords version: <select id="version-selector" style="width: fit-content;"></select>
+  <button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
 </div>
 
 
-Select capo fret: <select id="capo-selector" style="width: fit-content;">
+
+
+
+
+
+    <div>Song BPM: <span id="main-bpm"></span></div>
+    <div>Current BPM: <span id="current-bpm"></span></div>
+  
+    <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
+
+
+
+<div>
+Select capo fret: <select id="capo-selector" style="width: fit-content; display: flex; flex-direction: row;">
   <option value="0">0</option>
   <option value="1">1</option>
   <option value="2">2</option>
@@ -172,7 +186,15 @@ Select capo fret: <select id="capo-selector" style="width: fit-content;">
   <option value="9">9</option>
 </select>
 
-  <div>recommend capo: <input id="recommend-capo" style="width: 50px" disabled></div>
+  <div>(recommend capo: <input id="recommend-capo" style="width: 18px" disabled>)</div>
+
+
+  </div>
+
+
+
+
+
 
 
   <div class="checkboxes">
@@ -206,17 +228,15 @@ Select capo fret: <select id="capo-selector" style="width: fit-content;">
 
 <div id="secret-metadata" style="display:none">
   <label>
-      Tempo changes: <div contenteditable="true" id="tempo-change-textbox"></div>
+      Tempo changes: <textarea  id="tempo-change-textbox"style="height: 2rem"></textarea>
   </label>
 
   <br>
   <label>
-      Raw chords (in song's original key): <div contenteditable="true" id="raw-chords-textbox"></div>
+      Raw chords (in song's original key): <textarea  id="raw-chords-textbox" style="height: 5rem"></textarea>
   </label>
 
 </div>
-
-
 
 
 
@@ -257,18 +277,22 @@ class UiManager{
   /** @type {HTMLDivElement} */ secretMetadataDiv;
   /** @type {HTMLDivElement} */ capoSelectorDiv;
   secretButtonDiv;
+  
+  #hideWhenNoDataDiv;
 
 
   horButton;
   verButton;
 
   pipWindow = null;
-
+  keyType = 'sharp';
 
   smallDiv;
   shouldAutoScroll = true;
 
   currentCapoValue = 0;
+
+
 
 
 
@@ -323,6 +347,11 @@ class UiManager{
 
 
     this.horButton = this.#floatingDiv.querySelector("#hor-button");
+
+    
+    this.#hideWhenNoDataDiv = this.#floatingDiv.querySelector("#hide-when-no-data");
+
+
     
 
 
@@ -410,6 +439,22 @@ class UiManager{
     })
 
 
+    this.tempoChangeDiv.addEventListener('input', (event)=> {
+      console.log("edit tempo")
+
+      globalSongData.chordVersionList[selectingChordVersion].tempoChangeList = parseTempoChanges(this.tempoChangeDiv.value,
+         globalSongData.chordVersionList[selectingChordVersion].mainBpm);
+    })
+
+    this.rawChordsDiv.addEventListener('input', (event)=> {
+        console.log("edit rawChords")
+        const newChords = this.rawChordsDiv.value.split(',');
+
+        globalSongData.chordVersionList[selectingChordVersion].chords = newChords;
+        this.reRenderChords();
+    });
+
+
 
 
 
@@ -422,9 +467,15 @@ class UiManager{
   }
 
 
-  createPopup(message) {
+  createPrompt(message) {
     return this.pipWindow.prompt(message);
   }
+
+  createConfirm(message) {
+    return this.pipWindow.confirm(message);
+  }
+
+
 
 
 
@@ -467,6 +518,7 @@ class UiManager{
     this.pipWindow = await documentPictureInPicture.requestWindow({disallowReturnToOpener: true, width: 750, height: 200});
     this.pipWindow.document.body.append(this.#floatingDiv);
     this.pipWindow.document.body.style.backgroundColor = almostBlack;
+    this.pipWindow.document.body.style.fontFamily = 'monospace';
 
 
 
@@ -535,7 +587,7 @@ class UiManager{
 
 
     // Transpose
-    let keyType = detectKey(chordData.chords); // Detect if we're in a sharp or flat key
+ 
     
 
 
@@ -545,7 +597,7 @@ class UiManager{
     
 
 
-        const chord = handleTranspose(chordOri, -this.currentCapoValue, keyType);
+        const chord = handleTranspose(chordOri, -this.currentCapoValue, this.keyType);
 
        
 
@@ -629,27 +681,31 @@ class UiManager{
     const chordData = globalSongData.chordVersionList[this.versionSelector.selectedIndex]
     if (!chordData) return;
 
-    this.tempoChangeDiv.innerHTML = JSON.stringify(chordData.tempoChangeList);
-    this.rawChordsDiv.innerHTML = chordData.chords.join(",")
+    this.tempoChangeDiv.value = JSON.stringify(chordData.tempoChangeList);
+    this.rawChordsDiv.value = chordData.chords.join(",")
   }
 
 
   handleChangeChordLabel(inputElement) {
   // Find the parent .chord-box element
   const chordBox = inputElement.closest('.chord-box');
-  
-  if (chordBox) {
-      // Get the beatNumber attribute from the .chord-box
-      const beatNumber = chordBox.getAttribute('beatNumber');
-      
-      // Get the value from the input field
-      const newChordLabel = inputElement.value;
 
-      const currentCordVersion = globalSongData.chordVersionList[this.versionSelector.selectedIndex];
-      currentCordVersion.chords[beatNumber] = newChordLabel;
-      
-      // Add any additional logic you need here
-  }
+
+  if (!chordBox) return;
+
+  // Un-capo it.
+  const rawLetter = handleTranspose(inputElement.value, -this.currentCapoValue,this.keyType);
+  
+
+  // Get the beatNumber attribute from the .chord-box
+  const beatNumber = chordBox.getAttribute('beatNumber');
+  
+  const currentCordVersion = globalSongData.chordVersionList[this.versionSelector.selectedIndex];
+  currentCordVersion.chords[beatNumber] = rawLetter;
+
+  this.updateSecretDiv();
+  
+
 }
 
 clearUi(){
@@ -659,6 +715,10 @@ clearUi(){
   this.#mainBpmDiv.textContent =  "";
   this.#recommendCapoDiv.value =  "";
   this.#currentBpmDiv.textContent =  "";
+  this.#creatorNameDiv.value =  "";
+
+  
+
 }
   
 
@@ -670,10 +730,15 @@ clearUi(){
 
     if (!globalSongData) return;
 
+
+
     console.log(TAG+"setup song data", globalSongData.songName)
 
     this.#videoIdDiv.textContent = videoId;
     this.#songNameDiv.textContent = globalSongData.songName;
+
+   
+    this.keyType = detectKey(globalSongData.chordVersionList[selectingChordVersion].chords);
     
 
     

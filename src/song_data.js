@@ -23,6 +23,21 @@ function getFieldValue(field){
     }
 
 
+function parseTempoChanges(tempoChangeString, mainBpm) {
+    let tempoChangeList = [];
+
+    tempoChangeList = JSON.parse(tempoChangeString);
+
+    if (!tempoChangeList || tempoChangeList.length === 0) tempoChangeList = [[0, mainBpm]];
+
+    if (tempoChangeList.length > 0 && tempoChangeList[0][0] !== 0){
+        tempoChangeList.push([0, mainBpm])
+
+    }
+
+    return tempoChangeList;
+
+}
 
 
 
@@ -42,6 +57,28 @@ class ChordData{
     Uuid;
 
     constructor(chordVersionMap){
+
+        // Create empty chord data if chordVersionMap is null
+        if (!chordVersionMap){
+
+            this.recommendCapo = 0;
+            this.chords = Array.from({ length: 200 }, () => '');
+            this.mainBpm = 120;
+            this.Uuid = "";
+            this.startChord = 0;
+            this.isLocal = true;
+            this.tempoChangeList = [[0, this.mainBpm]];
+            this.creatorName = "anon";
+            this.versionName = "untitled";
+
+
+            return;
+        }
+
+
+
+
+
     
         this.recommendCapo = getFieldValue(chordVersionMap.mapValue.fields.recommend_capo);
         this.chords = getFieldValue(chordVersionMap.mapValue.fields.chords).split(',');
@@ -52,16 +89,9 @@ class ChordData{
         
         const tempoChangeString = getFieldValue(chordVersionMap.mapValue.fields.tempo_change);
 
+        this.tempoChangeList = parseTempoChanges(tempoChangeString, this.mainBpm);
+
         
-      
-        this.tempoChangeList = JSON.parse(tempoChangeString);
-
-        if (!this.tempoChangeList || this.tempoChangeList.length === 0) this.tempoChangeList = [[0, this.mainBpm]];
-
-        if (this.tempoChangeList.length > 0 && this.tempoChangeList[0][0] !== 0){
-            this.tempoChangeList.push([0, this.mainBpm])
-
-        }
 
 
        

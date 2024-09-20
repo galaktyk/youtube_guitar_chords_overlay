@@ -57,6 +57,8 @@ function separateChord(chord) {
 function handleTranspose(chordOri, semitones, keyType) {
 
 
+
+
     if (chordOri === "" || this.currentCapoValue == 0) {
        
         return "";
