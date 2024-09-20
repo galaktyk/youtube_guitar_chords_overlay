@@ -23,8 +23,13 @@ function getUiHtml()
   input{
   background: none;
   color:${almostWhite};
-  border:1px solid white;
+  border:1px dashed ${almostWhite};
+
   }
+
+  input:disabled {
+        border: 1px dashed transparent;
+    }
 
 
 
@@ -109,6 +114,15 @@ function getUiHtml()
   background:${almostWhite}
   }
 
+  .checkboxes{
+      display: flex;
+    flex-direction: column;
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 1px dashed ${almostWhite};
+  }
+
 
 
 
@@ -121,7 +135,7 @@ function getUiHtml()
     <div>Song name: <span id="song-name"></span></div>
     <div>Song BPM: <span id="main-bpm"></span></div>
     <div>Current BPM: <span id="current-bpm"></span></div>
-    <div>recommend capo: <input id="recommend-capo" style="width: 50px" disabled></div>
+  
     <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
   </div> 
 </div>
@@ -129,16 +143,19 @@ function getUiHtml()
 
 
 <div style="display:flex; flex-direction: row">
-Select chords version: <select id="version-selector" style="width: fit-content;"></select>
-<button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
+  Select chords version: <select id="version-selector" style="width: fit-content;"></select>
+  <button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
 
 
-</div>
 
-<div id="secret-button" style="display:none">
-    <button id="rename-button" style="width: fit-content;">📝Rename</button>
-     <button id="delete-button" style="width: fit-content;">🗑️Delete version</button>
-    <button id="upload-button" title="Apply and upload this version to cloud database" style="width: fit-content;">💾Save to database</button>
+
+  <div id="secret-button" style="display:none">
+      <button id="rename-button" style="width: fit-content;">📝Rename</button>
+      <button id="delete-button" style="width: fit-content;">🗑️Delete version</button>
+      <button id="upload-button" title="Apply and upload this version to cloud database" style="width: fit-content;">💾Save to database</button>
+  </div>
+
+
 </div>
 
 
@@ -155,14 +172,23 @@ Select capo fret: <select id="capo-selector" style="width: fit-content;">
   <option value="9">9</option>
 </select>
 
+  <div>recommend capo: <input id="recommend-capo" style="width: 50px" disabled></div>
 
-<label>
-    <input type="checkbox" id="edit-mode-checkbox"> Edit mode
-</label>
 
-<label>
-    <input type="checkbox" id="show-chord-image-checkbox" checked> Show chord image
-</label>
+  <div class="checkboxes">
+      <label>
+          <input type="checkbox" id="edit-mode-checkbox"> Edit mode
+      </label>
+
+      <label>
+          <input type="checkbox" id="show-chord-image-checkbox" checked> Show chord image
+      </label>
+
+      <label>
+          <input type="checkbox" id="auto-scroll-checkbox" checked> Auto scroll
+      </label>
+  </div>
+
 
 
 <div>
@@ -240,6 +266,7 @@ class UiManager{
 
 
   smallDiv;
+  shouldAutoScroll = true;
 
   currentCapoValue = 0;
 
@@ -283,6 +310,7 @@ class UiManager{
 
     this.showChordImageDiv = this.#floatingDiv.querySelector("#show-chord-image-checkbox");
     this.editModeDiv = this.#floatingDiv.querySelector("#edit-mode-checkbox");
+    this.autoScrollDiv = this.#floatingDiv.querySelector("#auto-scroll-checkbox");
 
 
     this.secretMetadataDiv = this.#floatingDiv.querySelector("#secret-metadata");
@@ -358,6 +386,11 @@ class UiManager{
 
       chordPlayer.onRenameButton();
 
+
+    })
+
+    this.#floatingDiv.querySelector("#auto-scroll-checkbox").addEventListener('change',  ()=> {
+      this.shouldAutoScroll = this.autoScrollDiv.checked;
     })
 
 
@@ -679,12 +712,16 @@ clearUi(){
     const targetBox = this.#scrollContainerDiv.children[boxIndex];
     if(!targetBox) return;
 
-      targetBox.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start', 
-        inline: 'start'  
-      })
+
+    if (this.shouldAutoScroll){
+
+    targetBox.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start', 
+      inline: 'start'  
+    })
    
+  }
 
 
   }

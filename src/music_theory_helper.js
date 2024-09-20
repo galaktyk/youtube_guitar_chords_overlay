@@ -73,8 +73,20 @@ function handleTranspose(chordOri, semitones, keyType) {
     // Slash chord
     if (chordOri.includes("/")) {
 
-        const [root1, root2] = chordOri.split("/");
-        return  `${transpose(root1, semitones, keyType)}/${transpose(root2, semitones, keyType)}`
+        const [chord1, chord2] = chordOri.split("/");
+
+        const [root1,  quality1] = separateChord(chord1);
+        const transposedRoot1 = transpose(root1,semitones, keyType);
+
+
+        const [root2,  quality2] = separateChord(chord2);
+        const transposedRoot2 = transpose(root2,semitones, keyType);
+
+
+
+        return `${transposedRoot1}${quality1}/${transposedRoot2}${quality2}`;
+
+
     }
     
     
