@@ -8,7 +8,7 @@ function getFieldValue(field){
     } 
 
     else if (field.integerValue !== undefined) {
-        return field.integerValue;
+        return Number(field.integerValue);
 
     }
 
@@ -23,21 +23,6 @@ function getFieldValue(field){
     }
 
 
-function parseTempoChanges(tempoChangeString, mainBpm) {
-    let tempoChangeList = [];
-
-    tempoChangeList = JSON.parse(tempoChangeString);
-
-    if (!tempoChangeList || tempoChangeList.length === 0) tempoChangeList = [[0, mainBpm]];
-
-    if (tempoChangeList.length > 0 && tempoChangeList[0][0] !== 0){
-        tempoChangeList.push([0, mainBpm])
-
-    }
-
-    return tempoChangeList;
-
-}
 
 
 
@@ -49,12 +34,11 @@ class ChordData{
     versionName;
     recommendCapo;
     chords;
-    mainBpm;
     startChord;
     tempoChangeList;
 
     isLocal;
-    Uuid;
+    uuid;
 
     constructor(chordVersionMap){
 
@@ -63,13 +47,13 @@ class ChordData{
 
             this.recommendCapo = 0;
             this.chords = Array.from({ length: 200 }, () => '');
-            this.mainBpm = 120;
-            this.Uuid = "";
+            this.uuid = "";
             this.startChord = 0;
             this.isLocal = true;
-            this.tempoChangeList = [[0, this.mainBpm]];
+            this.tempoChangeList = [];
             this.creatorName = "anon";
             this.versionName = "untitled";
+            this.passwordHash = "";
 
 
             return;
@@ -80,16 +64,15 @@ class ChordData{
 
 
     
-        this.recommendCapo = getFieldValue(chordVersionMap.mapValue.fields.recommend_capo);
+        this.recommendCapo = getFieldValue(chordVersionMap.mapValue.fields.recommendCapo);
         this.chords = getFieldValue(chordVersionMap.mapValue.fields.chords).split(',');
-        this.mainBpm = getFieldValue(chordVersionMap.mapValue.fields.song_bpm);
-        this.Uuid = getFieldValue(chordVersionMap.mapValue.fields.uuid);
-        this.startChord = getFieldValue(chordVersionMap.mapValue.fields.start_chord) * 1000;
+        this.uuid = getFieldValue(chordVersionMap.mapValue.fields.uuid);
+        this.startChord = getFieldValue(chordVersionMap.mapValue.fields.startChord);
         this.isLocal = false;
         
-        const tempoChangeString = getFieldValue(chordVersionMap.mapValue.fields.tempo_change);
+        this.tempoChangeList = JSON.parse(getFieldValue(chordVersionMap.mapValue.fields.tempoChangeList));
 
-        this.tempoChangeList = parseTempoChanges(tempoChangeString, this.mainBpm);
+       
 
         
 
@@ -97,12 +80,12 @@ class ChordData{
        
         this.tempoChangeList.sort((a, b) => a[0] - b[0]);
       
-        this.versionName = getFieldValue(chordVersionMap.mapValue.fields.version_name);
+        this.versionName = getFieldValue(chordVersionMap.mapValue.fields.versionName);
 
 
-        this.creatorName = getFieldValue(chordVersionMap.mapValue.fields.creator_name);
+        this.creatorName = getFieldValue(chordVersionMap.mapValue.fields.creatorName);
         if (!this.creatorName) this.creatorName = "anon";
-        this.passwordHash = getFieldValue(chordVersionMap.mapValue.fields.password_hash);
+        this.passwordHash = getFieldValue(chordVersionMap.mapValue.fields.passwordHash);
        
     }
 
@@ -124,8 +107,8 @@ class SongData{
             this.songName = getFieldValue(fireStoreData.fields.song_name);
             this.chordVersionList = [];
 
-            const chordVersions = fireStoreData.fields.chords_versions.arrayValue.values;
-            chordVersions.forEach(chordVersionMap => {
+            const chordsVersions = fireStoreData.fields.chordsVersions.arrayValue.values;
+            chordsVersions.forEach(chordVersionMap => {
 
                 this.chordVersionList.push(new ChordData(chordVersionMap));
 

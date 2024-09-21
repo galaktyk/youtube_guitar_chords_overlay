@@ -4,10 +4,6 @@ const TAG = "ChordsPlayer: ";
 
 
 
-function deepCopyArray(array) {
-  return JSON.parse(JSON.stringify(array));
-}
-
 
 
 class ChordsPlayer{
@@ -104,7 +100,7 @@ class ChordsPlayer{
         newChordsVersion = new ChordData(); 
       }
       newChordsVersion.versionName = newName;
-      newChordsVersion.Uuid = generateRandomUUID(6);
+      newChordsVersion.uuid = generateRandomUUID(6);
       newChordsVersion.isLocal = true;
       const newSize = globalSongData.chordVersionList.push(newChordsVersion)
       selectingChordVersion = newSize-1;
@@ -135,8 +131,12 @@ class ChordsPlayer{
     if (!chordsData.isLocal){
       const password = uiManager.createPrompt("Modify this version data on cloud, please enter your password"); 
       if (!password) return;
-      // TODO: Send to firebase function, use chordsData.Uuid for checking
+      
 
+        console.log(TAG + "perform upload")
+        const ret = await uploadData(this.lastVideoId, "songname yesyes",chordsData,password)
+      
+      
 
       return;
     }
@@ -146,13 +146,11 @@ class ChordsPlayer{
     if (!password) return;
 
 
-    const hash = await sha256(password);
-    console.log(TAG+"hash password: ", hash)
+    chordsData.passwordHash = await sha256(password);
 
-
-    // TODO: Send to firebase function, use chordsData.Uuid for checking
-    const chordsStringData = JSON.stringify(chordsData);
-    console.log(TAG+chordsStringData)
+    console.log(TAG + "perform upload")
+    const ret = await uploadData(this.lastVideoId, "songname yesyes",chordsData,password)
+    console.log(ret)
 
 
 

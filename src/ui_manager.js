@@ -163,11 +163,6 @@ textarea{
   </div>
 
 
-
-
-
-
-    <div>Song BPM: <span id="main-bpm"></span></div>
     <div>Current BPM: <span id="current-bpm"></span></div>
   
     <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
@@ -176,9 +171,9 @@ textarea{
 
 <div style=" display: flex; flex-direction: row;">
 Select capo fret: <select id="capo-selector" style="width: fit-content;">
-  <option value="-2">-2</option>
+  <option value="-2" >-2</option>
   <option value="-1">-1</option>
-  <option value="0">0</option>
+  <option value="0" selected>0</option>
   <option value="1">1</option>
   <option value="2">2</option>
   <option value="3">3</option>
@@ -237,8 +232,15 @@ Select capo fret: <select id="capo-selector" style="width: fit-content;">
 
 
 <div id="secret-metadata" style="display:none">
+
+
   <label>
-      Tempo changes: <textarea  id="tempo-change-textbox"style="height: 2rem"></textarea>
+    Chord start: <input type="number" min="0" id="start-chord" style="width: 100px; background-color: white; color: black">
+  </label>
+  <br>
+
+  <label>
+      Tempo change list: <textarea  id="tempo-change-textbox"style="height: 2rem"></textarea>
   </label>
 
   <br>
@@ -271,7 +273,6 @@ class UiManager{
 
   /** @type {HTMLDivElement} */ #scrollContainerDiv;
   /** @type {HTMLDivElement} */ versionSelector;
-  /** @type {HTMLDivElement} */ #mainBpmDiv;
    /** @type {HTMLDivElement} */ #currentBpmDiv;
   /** @type {HTMLDivElement} */ #recommendCapoDiv;
    /** @type {HTMLDivElement} */ #creatorNameDiv;
@@ -286,6 +287,7 @@ class UiManager{
   /** @type {HTMLDivElement} */ rawChordsDiv;
   /** @type {HTMLDivElement} */ secretMetadataDiv;
   /** @type {HTMLDivElement} */ capoSelectorDiv;
+  startChordDiv;
   secretButtonDiv;
   
   #hideWhenNoDataDiv;
@@ -334,7 +336,6 @@ class UiManager{
     this.#videoIdDiv = this.#floatingDiv.querySelector("#video-id");
     this.#songNameDiv = this.#floatingDiv.querySelector("#song-name");
 
-    this.#mainBpmDiv = this.#floatingDiv.querySelector("#main-bpm");
     this.#currentBpmDiv = this.#floatingDiv.querySelector("#current-bpm");
     this.#recommendCapoDiv = this.#floatingDiv.querySelector("#recommend-capo");    
     this.#creatorNameDiv = this.#floatingDiv.querySelector("#creator-name");
@@ -349,8 +350,11 @@ class UiManager{
 
 
 
+
     this.secretMetadataDiv = this.#floatingDiv.querySelector("#secret-metadata");
     this.secretButtonDiv = this.#floatingDiv.querySelector("#secret-button");
+    
+    this.startChordDiv = this.#floatingDiv.querySelector("#start-chord");
     this.tempoChangeDiv = this.#floatingDiv.querySelector("#tempo-change-textbox");
     this.rawChordsDiv = this.#floatingDiv.querySelector("#raw-chords-textbox");
 
@@ -454,6 +458,11 @@ class UiManager{
       this.reRenderChords();
     });
 
+    this.#creatorNameDiv.addEventListener('input', (event)=> {
+
+      globalSongData.chordVersionList[selectingChordVersion].creatorName = this.#creatorNameDiv.value;
+    })
+
 
     this.capoSelectorDiv.addEventListener('change', ()=> {
       this.currentCapoValue = Number(this.capoSelectorDiv.value);
@@ -466,8 +475,7 @@ class UiManager{
     this.tempoChangeDiv.addEventListener('input', (event)=> {
       console.log("edit tempo")
 
-      globalSongData.chordVersionList[selectingChordVersion].tempoChangeList = parseTempoChanges(this.tempoChangeDiv.value,
-         globalSongData.chordVersionList[selectingChordVersion].mainBpm);
+      globalSongData.chordVersionList[selectingChordVersion].tempoChangeList = JSON.parse(this.tempoChangeDiv.value);
     })
 
     this.rawChordsDiv.addEventListener('input', (event)=> {
@@ -477,6 +485,14 @@ class UiManager{
         globalSongData.chordVersionList[selectingChordVersion].chords = newChords;
         this.reRenderChords();
     });
+
+    this.#recommendCapoDiv.addEventListener('input', (event)=> {
+      globalSongData.chordVersionList[selectingChordVersion].recommendCapo = this.#recommendCapoDiv.value;
+    })
+
+    this.startChordDiv.addEventListener('input', (event)=> {
+      globalSongData.chordVersionList[selectingChordVersion].startChord = Number(this.startChordDiv.value);
+    })
 
 
 
@@ -611,6 +627,12 @@ class UiManager{
 
 
     // Transpose
+    if (this.useConvertSharp){
+      this.keyType = "sharp";
+    }else{
+      this.keyType = detectKey(globalSongData.chordVersionList[selectingChordVersion].chords);
+    }
+
  
     
 
@@ -686,7 +708,6 @@ class UiManager{
   
   
 
-    this.#mainBpmDiv.textContent = chordData.mainBpm;
     this.#recommendCapoDiv.value = chordData.recommendCapo;
     this.#creatorNameDiv.value = chordData.creatorName;
 
@@ -705,6 +726,7 @@ class UiManager{
     const chordData = globalSongData.chordVersionList[this.versionSelector.selectedIndex]
     if (!chordData) return;
 
+    this.startChordDiv.value = chordData.startChord;
     this.tempoChangeDiv.value = JSON.stringify(chordData.tempoChangeList);
     this.rawChordsDiv.value = chordData.chords.join(",")
   }
@@ -745,9 +767,8 @@ class UiManager{
 
 clearUi(){
 
-  this.#songNameDiv.textContent = "Not found";
+  this.#songNameDiv.textContent = "No chords found for this song, Create your own transcription and securely save it to the cloud 🥰";
   this.#videoIdDiv.textContent = "";
-  this.#mainBpmDiv.textContent =  "";
   this.#recommendCapoDiv.value =  "";
   this.#currentBpmDiv.textContent =  "";
   this.#creatorNameDiv.value =  "";
@@ -772,12 +793,8 @@ clearUi(){
     this.#videoIdDiv.textContent = videoId;
     this.#songNameDiv.textContent = globalSongData.songName;
 
+
    
-    if (this.useConvertSharp){
-      this.keyType = "sharp";
-    }else{
-      this.keyType = detectKey(globalSongData.chordVersionList[selectingChordVersion].chords);
-    }
 
     
 
@@ -834,25 +851,35 @@ clearUi(){
 
   onHighlightBeat(lastDrawBoxIdx,currentDrawBoxIdx,needUrgentScroll){
     
-
-
     if (lastDrawBoxIdx >= 0){
       lastDrawBox = this.#scrollContainerDiv.children[lastDrawBoxIdx];
     }
 
+    let boxToFocusIdx;
 
-    currentBox = this.#scrollContainerDiv.children[currentDrawBoxIdx];
-
-    if (!currentBox) return;
+    if (currentDrawBoxIdx >= 0){
+      currentBox = this.#scrollContainerDiv.children[currentDrawBoxIdx];
+      boxToFocusIdx = currentDrawBoxIdx;
+    
+    }
+    // When seek to beginning and song chord is not start yet
+    else{
+      currentBox = null
+      boxToFocusIdx = 0;
+      
+    }
+    
+    
 
     requestAnimationFrame(this.draw);
     
 
 
+    
 
 
     if (needUrgentScroll || currentDrawBoxIdx % 4 == 0){
-        this.requestScroll(currentDrawBoxIdx);
+        this.requestScroll(boxToFocusIdx);
     };
 
 
