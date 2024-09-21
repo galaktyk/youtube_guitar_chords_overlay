@@ -46,11 +46,11 @@ class ChordData{
         if (!chordVersionMap){
 
             this.recommendCapo = 0;
-            this.chords = Array.from({ length: 200 }, () => '');
+            this.chords = Array.from({ length: 500 }, () => '');
             this.uuid = "";
             this.startChord = 0;
             this.isLocal = true;
-            this.tempoChangeList = [];
+            this.tempoChangeList = [[0,120]];
             this.creatorName = "anon";
             this.versionName = "untitled";
             this.passwordHash = "";

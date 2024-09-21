@@ -42,7 +42,12 @@ class BeatRunner
         if (!beatNumber) return;
         const targetTimeSecMs =   this.getTimeFromBeatNumberMs(beatNumber);
         console.log(TAG+"handleChordClick: targetTimeSecMs", targetTimeSecMs)
-        globalAudioPlayer.currentTime = targetTimeSecMs/1000 + 0.01;
+        try{
+            globalAudioPlayer.currentTime = targetTimeSecMs/1000 + 0.01;
+        }catch(e){
+            console.log(TAG+"handleChordClick: error", e)
+        }
+      
 
 
         // handleSeek will be trigger after this
@@ -107,7 +112,7 @@ class BeatRunner
             const beatsFromPrevious = inputBeatNumber - previousBeatNumber;
             const timeFromPrevious = beatsFromPrevious * beatDurationMs;
       
-            return startChordTimeMs + totalTime + timeFromPrevious;
+            return startChordTimeMs + totalTimeMs + timeFromPrevious;
           }
       
           // Update total time and BPM for the next segment
