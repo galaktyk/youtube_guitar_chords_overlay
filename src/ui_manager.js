@@ -145,11 +145,6 @@ textarea{
 
 
 
-  <div id="secret-button" style="display:none">
-      <button id="rename-button" style="width: fit-content;">📝Rename</button>
-      <button id="delete-button" style="width: fit-content;">🗑️Delete version</button>
-      <button id="upload-button" title="Apply and upload this version to cloud database" style="width: fit-content;">💾Save to database</button>
-  </div>
 
 
 
@@ -159,6 +154,13 @@ textarea{
   <button id="create-button" title="Create your new version" style="width: fit-content;">➕Create new</button>
 </div>
 
+
+
+  <div id="secret-button" style="visibility:hidden">
+      <button id="rename-button" style="width: fit-content;">📝Rename</button>
+      <button id="delete-button" style="width: fit-content;">🗑️Delete version</button>
+      <button id="upload-button" title="Apply and upload this version to cloud database" style="width: fit-content;">💾Save to database</button>
+  </div>
 
 
 
@@ -172,8 +174,10 @@ textarea{
 
 
 
-<div>
-Select capo fret: <select id="capo-selector" style="width: fit-content; display: flex; flex-direction: row;">
+<div style=" display: flex; flex-direction: row;">
+Select capo fret: <select id="capo-selector" style="width: fit-content;">
+  <option value="-2">-2</option>
+  <option value="-1">-1</option>
   <option value="0">0</option>
   <option value="1">1</option>
   <option value="2">2</option>
@@ -186,7 +190,7 @@ Select capo fret: <select id="capo-selector" style="width: fit-content; display:
   <option value="9">9</option>
 </select>
 
-  <div>(recommend capo: <input id="recommend-capo" style="width: 18px" disabled>)</div>
+  <div>(recommend capo: <input type="number" min="-2" max="24" id="recommend-capo" style="width: fit-content;" disabled>)</div>
 
 
   </div>
@@ -197,7 +201,7 @@ Select capo fret: <select id="capo-selector" style="width: fit-content; display:
 
 
 
-  <div class="checkboxes">
+  <div class="checkboxes" style="   margin-right: 30px; padding: 5px;">
       <label>
           <input type="checkbox" id="edit-mode-checkbox"> Edit mode
       </label>
@@ -209,6 +213,12 @@ Select capo fret: <select id="capo-selector" style="width: fit-content; display:
       <label>
           <input type="checkbox" id="auto-scroll-checkbox" checked> Auto scroll
       </label>
+
+            <label>
+          <input type="checkbox" id="convert-sharp-checkbox"> Display flat as sharp
+      </label>
+
+
   </div>
 
 
@@ -293,7 +303,7 @@ class UiManager{
   currentCapoValue = 0;
 
 
-
+  useConvertSharp = false;
 
 
 
@@ -335,6 +345,8 @@ class UiManager{
     this.showChordImageDiv = this.#floatingDiv.querySelector("#show-chord-image-checkbox");
     this.editModeDiv = this.#floatingDiv.querySelector("#edit-mode-checkbox");
     this.autoScrollDiv = this.#floatingDiv.querySelector("#auto-scroll-checkbox");
+    this.convertSharpDiv = this.#floatingDiv.querySelector("#convert-sharp-checkbox");
+
 
 
     this.secretMetadataDiv = this.#floatingDiv.querySelector("#secret-metadata");
@@ -416,6 +428,18 @@ class UiManager{
       chordPlayer.onRenameButton();
 
 
+    })
+
+    this.#floatingDiv.querySelector('#convert-sharp-checkbox').addEventListener('change',  ()=> {
+
+      this.useConvertSharp = this.convertSharpDiv.checked;
+      console.log("change useConvertSharp to " + this.useConvertSharp)
+      if (this.useConvertSharp){
+        this.keyType = "sharp";
+      }else{
+        this.keyType = detectKey(globalSongData.chordVersionList[selectingChordVersion].chords);
+      }
+      this.reRenderChords();
     })
 
     this.#floatingDiv.querySelector("#auto-scroll-checkbox").addEventListener('change',  ()=> {
@@ -651,13 +675,13 @@ class UiManager{
 
 
       if (this.isEditmode){
+
         this.#scrollContainerDiv.addEventListener('input', (event)=> {
           if (event.target.classList.contains('chord-text-input')) {
               this.handleChangeChordLabel(event.target);
           }
       });
-      }
-      
+    }
 
   
   
@@ -693,16 +717,27 @@ class UiManager{
 
   if (!chordBox) return;
 
+
   // Un-capo it.
-  const rawLetter = handleTranspose(inputElement.value, -this.currentCapoValue,this.keyType);
+  // also check input validation
+  let rawLetter = handleTranspose(inputElement.value, this.currentCapoValue,this.keyType);
+
+
+  // If invalid chord letters, just leave it as it is
+  if (!rawLetter){
+    rawLetter = inputElement.value;
+   
+  }
+
   
 
   // Get the beatNumber attribute from the .chord-box
   const beatNumber = chordBox.getAttribute('beatNumber');
-  
-  const currentCordVersion = globalSongData.chordVersionList[this.versionSelector.selectedIndex];
-  currentCordVersion.chords[beatNumber] = rawLetter;
 
+  globalSongData.chordVersionList[this.versionSelector.selectedIndex].chords[beatNumber] = rawLetter;
+
+
+  // update the lower UI
   this.updateSecretDiv();
   
 
@@ -738,7 +773,12 @@ clearUi(){
     this.#songNameDiv.textContent = globalSongData.songName;
 
    
-    this.keyType = detectKey(globalSongData.chordVersionList[selectingChordVersion].chords);
+    if (this.useConvertSharp){
+      this.keyType = "sharp";
+    }else{
+      this.keyType = detectKey(globalSongData.chordVersionList[selectingChordVersion].chords);
+    }
+
     
 
     
@@ -827,7 +867,7 @@ clearUi(){
     this.#recommendCapoDiv.disabled = false;
     this.#creatorNameDiv.disabled = false;
     this.reRenderChords();
-    this.secretButtonDiv.style.display = "block";
+    this.secretButtonDiv.style.visibility = "visible";
     this.secretMetadataDiv.style.display = "block";
 
   }
@@ -836,7 +876,7 @@ clearUi(){
     this.#recommendCapoDiv.disabled = true;
     this.#creatorNameDiv.disabled = true;
     this.reRenderChords();
-    this.secretButtonDiv.style.display = "none";
+    this.secretButtonDiv.style.visibility = "hidden";
     this.secretMetadataDiv.style.display = "none";
 
   }

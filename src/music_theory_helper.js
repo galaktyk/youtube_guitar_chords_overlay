@@ -84,6 +84,12 @@ function handleTranspose(chordOri, semitones, keyType) {
         const [root2,  quality2] = separateChord(chord2);
         const transposedRoot2 = transpose(root2,semitones, keyType);
 
+        if (!root1 || !root2 ){
+
+            return chordOri
+        }
+
+
 
 
         return `${transposedRoot1}${quality1}/${transposedRoot2}${quality2}`;
@@ -95,7 +101,15 @@ function handleTranspose(chordOri, semitones, keyType) {
 
     const [oriRoot,  quality] = separateChord(chordOri);
 
+
+
+
+
     const transposedRoot = transpose(oriRoot,semitones, keyType);
+
+    if (!transposedRoot){
+        return chordOri
+    }
 
     return `${transposedRoot}${quality}`;
 
