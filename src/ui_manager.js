@@ -165,7 +165,7 @@ textarea{
 
     <div>Current BPM: <span id="current-bpm"></span></div>
   
-    <div>creator: <input id="creator-name" style="width: 50px" disabled></div>
+    <div>creator: <input id="creator-name" style="width: 200px" disabled></div>
 
 
 

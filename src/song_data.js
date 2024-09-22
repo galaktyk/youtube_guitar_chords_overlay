@@ -104,7 +104,7 @@ class SongData{
 
         if (fireStoreData){
 
-            this.songName = getFieldValue(fireStoreData.fields.song_name);
+            this.songName = getFieldValue(fireStoreData.fields.songName);
             this.chordVersionList = [];
 
             const chordsVersions = fireStoreData.fields.chordsVersions.arrayValue.values;
