@@ -131,10 +131,9 @@ class ChordsPlayer{
     if (!chordsData.isLocal){
       const password = uiManager.createPrompt("Modify this version data on cloud, please enter your password"); 
       if (!password) return;
-      
-
+    
         console.log(TAG + "perform upload")
-        const ret = await uploadData(this.lastVideoId, "songname yesyes",chordsData,password)
+        const ret = await uploadData(this.lastVideoId, globalSongData.songName, chordsData,password)
       
       
 
@@ -149,7 +148,7 @@ class ChordsPlayer{
     chordsData.passwordHash = await sha256(password);
 
     console.log(TAG + "perform upload")
-    const ret = await uploadData(this.lastVideoId, "songname yesyes",chordsData,password)
+    const ret = await uploadData(this.lastVideoId, globalSongData.songName, chordsData,password)
     console.log(ret)
 
 
@@ -237,6 +236,9 @@ class ChordsPlayer{
 
       return
     }
+
+
+
     this.onOpenNewSong(videoId);
     return;
   }
@@ -281,7 +283,7 @@ class ChordsPlayer{
     uiManager.requestScroll(0);
     hooker.startHooking();
 
-      return;
+    return;
 
   }
   

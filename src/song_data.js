@@ -116,7 +116,7 @@ class SongData{
                 
 
         }else{
-            this.songName = "Not found";
+            this.songName = document.title.replace(/^\(\d+\) | - YouTube$/g, '').trim();
             this.chordVersionList = [];
         }
         

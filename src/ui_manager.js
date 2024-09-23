@@ -138,7 +138,7 @@ textarea{
 
 
     <div>Video ID: <span id="video-id"></span></div>
-    <div>Song name: <span id="song-name"></span></div>
+    <div>Song name: <input id="song-name" disabled style="width: 60%"></div>
 
 
 
@@ -767,8 +767,8 @@ class UiManager{
 
 clearUi(){
 
-  this.#songNameDiv.textContent = "No chords found for this song, Create your own transcription and securely save it to the cloud 🥰";
   this.#videoIdDiv.textContent = "";
+  this.#songNameDiv.value = "";
   this.#recommendCapoDiv.value =  "";
   this.#currentBpmDiv.textContent =  "";
   this.#creatorNameDiv.value =  "";
@@ -791,7 +791,7 @@ clearUi(){
     console.log(TAG+"setup song data", globalSongData.songName)
 
     this.#videoIdDiv.textContent = videoId;
-    this.#songNameDiv.textContent = globalSongData.songName;
+    this.#songNameDiv.value = globalSongData.songName;
 
 
    

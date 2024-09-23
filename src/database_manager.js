@@ -40,7 +40,8 @@ class DatabaseManager{
             return new SongData();
         }
 
-        return /** @type {SongData}*/ new SongData(fireStoreData);
+
+        return new SongData(fireStoreData);
     }
 
 
