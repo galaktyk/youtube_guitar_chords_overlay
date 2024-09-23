@@ -126,7 +126,20 @@ class ChordsPlayer{
 
   async onUploadButton(){
 
+
+    // First one who upload will set the song name
+    if (globalSongData.songName === "") {
+
+      globalSongData.songName =  document.title.replace(/^\(\d+\) | - YouTube$/g, '').trim();
+      uiManager.updateSongData(this.lastVideoId);
+
+    }
+
     const chordsData = globalSongData.chordVersionList[selectingChordVersion];
+
+
+
+
 
     if (!chordsData.isLocal){
       const password = uiManager.createPrompt("Modify this version data on cloud, please enter your password"); 
@@ -135,8 +148,6 @@ class ChordsPlayer{
         console.log(TAG + "perform upload")
         const ret = await uploadData(this.lastVideoId, globalSongData.songName, chordsData,password)
       
-      
-
       return;
     }
 
@@ -156,6 +167,8 @@ class ChordsPlayer{
   }
 
   async onDeleteButton(){
+
+
 
     console.log(TAG + "perform delete")
     console.log(globalSongData.chordVersionList[selectingChordVersion])
@@ -272,11 +285,12 @@ class ChordsPlayer{
     selectingChordVersion = 0;
 
   
-
+    console.log(TAG+"fetchSongFromDatabase: "+videoId)
     globalSongData = await databaseManager.fetchSongFromDatabase(videoId);
 
 
     console.log(globalSongData)
+    console.log("title: "+document.title)
 
     
     uiManager.updateSongData(videoId);
