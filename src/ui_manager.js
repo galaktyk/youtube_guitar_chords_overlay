@@ -522,6 +522,11 @@ class UiManager{
     return this.pipWindow.confirm(message);
   }
 
+  createAlert(message) {
+    return this.pipWindow.alert(message);
+  }
+
+
 
 
 
@@ -732,7 +737,12 @@ class UiManager{
 
   updateSecretDiv(){
     const chordData = globalSongData.chordVersionList[this.versionSelector.selectedIndex]
-    if (!chordData) return;
+    if (!chordData) {
+      this.startChordDiv.value = ""
+      this.tempoChangeDiv.value = "";
+      this.rawChordsDiv.value = "";
+      return;
+    }
 
     this.startChordDiv.value = chordData.startChord;
     this.tempoChangeDiv.value = JSON.stringify(chordData.tempoChangeList);

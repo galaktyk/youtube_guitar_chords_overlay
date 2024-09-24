@@ -113,11 +113,6 @@ class ChordsPlayer{
 
 
 
-
-
-     
-
-
     }
 
 
@@ -146,7 +141,7 @@ class ChordsPlayer{
       if (!password) return;
     
         console.log(TAG + "perform upload")
-        const ret = await uploadData(this.lastVideoId, globalSongData.songName, chordsData,password)
+        const ret = await databaseManager.uploadData(this.lastVideoId, globalSongData.songName, chordsData,password)
       
       return;
     }
@@ -159,14 +154,57 @@ class ChordsPlayer{
     chordsData.passwordHash = await sha256(password);
 
     console.log(TAG + "perform upload")
-    const ret = await uploadData(this.lastVideoId, globalSongData.songName, chordsData,password)
-    console.log(ret)
+    const ret = await databaseManager.uploadData(this.lastVideoId, globalSongData.songName, chordsData,password);
+
+    if(!ret){
+      uiManager.createAlert("No response from server");
+      return
+    }
+
+    switch (ret.status) {
+      case 200:
+        uiManager.createAlert("Upload success");
+        chordsData.isLocal = false;
+        break;
+      case 401:
+        uiManager.createAlert("Wrong password");
+        break;
+      default:
+        uiManager.createAlert("Upload failed, status code: " + ret.status);
+        break;
+    }
+
 
 
 
   }
 
+  deleteLocal(){
+    console.log(TAG + "perform local delete")
+    globalSongData.chordVersionList.splice(selectingChordVersion, 1);
+
+    uiManager.reRenderVersionSelector();
+
+    // force select first available version, use chordsData.Uuid for checking
+    selectingChordVersion = 0;
+    uiManager.setSelectVersion(selectingChordVersion);
+    uiManager.reRenderChords();
+    console.log(TAG + "remove success")
+
+    if (globalSongData.chordVersionList.length == 0) {
+      globalSongData = new SongData();
+      uiManager.updateSongData(this.lastVideoId);
+    }
+
+    return;
+
+
+  }
+
+
   async onDeleteButton(){
+
+
 
 
 
@@ -175,24 +213,40 @@ class ChordsPlayer{
     const chordsData = globalSongData.chordVersionList[selectingChordVersion];
 
     if (chordsData.isLocal){
-      console.log(TAG + "perform local delete")
-      globalSongData.chordVersionList.splice(selectingChordVersion, 1);
 
-      uiManager.reRenderVersionSelector();
-
-      // force select first available version, use chordsData.Uuid for checking
-      selectingChordVersion = 0;
-      uiManager.setSelectVersion(selectingChordVersion);
-      uiManager.reRenderChords();
-      console.log(TAG + "remove success")
+      this.deleteLocal();
       return;
-
-
+   
     }
 
     const password = uiManager.createPrompt("Remove this veersion from cloud database, please enter password for deletion"); 
     if (!password) return;
     // TODO: Send to firebase function
+
+    const ret = await databaseManager.deleteSong(this.lastVideoId, chordsData.uuid, password);
+
+    if (!ret){
+
+      uiManager.createAlert("No response from server");
+      return;
+    }
+
+    switch (ret.status) {
+      case 200:
+        uiManager.createAlert("Delete success");
+        this.deleteLocal();
+        break;
+      case 401:
+        uiManager.createAlert("Wrong password");
+        break;
+      case 404:
+        uiManager.createAlert("This chords version does not exist in cloud database");
+        break;
+      default:
+        uiManager.createAlert("Unknown error, status code: " + ret.status);
+        break;
+    }
+
 
 
 
