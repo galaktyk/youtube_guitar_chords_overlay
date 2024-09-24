@@ -76,9 +76,6 @@ class DatabaseManager{
             }
     
     
-            console.log(payload)
-    
-    
             const response = await fetch(FIREBASE_FUNCTION_MANAGE_URL, {
                 method: 'POST', 
                 headers: {
@@ -86,9 +83,8 @@ class DatabaseManager{
                 },
                 body: JSON.stringify(payload), 
             })
-            console.log(response)
-            
-    
+ 
+       
             
             return response;
     

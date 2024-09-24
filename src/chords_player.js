@@ -155,11 +155,14 @@ class ChordsPlayer{
 
     console.log(TAG + "perform upload")
     const ret = await databaseManager.uploadData(this.lastVideoId, globalSongData.songName, chordsData,password);
+    console.log(ret)
 
     if(!ret){
       uiManager.createAlert("No response from server");
       return
     }
+
+    
 
     switch (ret.status) {
       case 200:
@@ -254,15 +257,7 @@ class ChordsPlayer{
 
   onRenameButton(){
 
-    const chordsData = globalSongData.chordVersionList[selectingChordVersion];
 
-      if (!chordsData.isLocal){
-        const password = uiManager.createPrompt("Rename this version on cloud database requires password");
-
-        // TODO : Send to firebase function
-        return;
-
-    }
 
 
 
@@ -272,6 +267,12 @@ class ChordsPlayer{
     globalSongData.chordVersionList[selectingChordVersion].versionName = newName;
     uiManager.reRenderVersionSelector();
     uiManager.setSelectVersion(selectingChordVersion);
+
+
+    uiManager.createAlert("Rename success");
+
+
+
   }
 
   
