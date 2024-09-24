@@ -371,6 +371,19 @@ class UiManager{
     
 
 
+
+    
+
+    
+
+  }
+
+
+
+  bindingButtons() {
+    
+
+
     this.horButton.addEventListener('click', ()=> {
       this.#scrollContainerDiv.style.flexWrap = 'nowrap';
     });
@@ -497,13 +510,7 @@ class UiManager{
 
 
 
-
-
-
     
-
-    
-
   }
 
 
@@ -539,6 +546,7 @@ class UiManager{
 
     this.smallDiv.querySelector("#pip-button").addEventListener('click', async ()=> {
       await this.showPip();
+      this.bindingButtons();
       chordPlayer.onOpenNewSong(null)
     });
 

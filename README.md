@@ -4,8 +4,10 @@ Detect youtube/youtube music url and show guitar chord overlay.\
 
 
 ## Song database
-[public firestore link](https://firestore.googleapis.com/v1/projects/guitar-chords-873b9/databases/(default)/documents/guitar-chords/)  
-current database only a few song, plan to be added later by user or AI autogenerate or web scraping.
+wip
+
+
+
 
 
 ## Installation
