@@ -24,6 +24,7 @@ function getUiHtml()
   background: none;
   color:${almostWhite};
   border:1px dashed ${almostWhite};
+  font-family: monospace;
 
   }
 
@@ -77,7 +78,6 @@ function getUiHtml()
 
   .chord-text-input{
     color:${almostBlack};
-  font-family: Roboto;
     font-size: 18px;
     font-weight: bold;
   display: flex;
@@ -102,6 +102,30 @@ function getUiHtml()
   font-size: 9px;
 
 }
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(122, 122, 122, 0.5); /* semi-transparent black */
+    display: none; /* initially hidden */
+    z-index: 999; /* make sure it's on top */
+}
+
+  .popup {
+    position: fixed;
+    top: 15%;
+    left: 50%;
+    transform: translate(-50%, -15%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* above the overlay */
+    display: none; /* initially hidden */
+    color: ${almostBlack};
+}
 
 
   .chord-icon{
@@ -123,6 +147,8 @@ function getUiHtml()
   border: 1px dashed ${almostWhite};
   }
 
+
+
 textarea{
   
   width: -webkit-fill-available;
@@ -135,6 +161,16 @@ textarea{
 
 
 </style>
+
+<div class="overlay" id="overlay"></div>
+
+ <div class="popup" id="popup">
+        <p style="color: ${almostBlack};" id="popupMessage"></p>
+        <input type="text" id="userInput" style="display: none; color: ${almostBlack};" />
+        <button id="popupButton1">button1</button>
+        <button id="popupButton2">button2</button>
+        <button id="popupButton3">button3</button>
+    </div>
 
 
     <div>Video ID: <span id="video-id"></span></div>
@@ -514,22 +550,127 @@ class UiManager{
   }
 
 
-  createPrompt(message) {
-    return this.pipWindow.prompt(message);
-  }
-
-  createConfirm(message) {
-    return this.pipWindow.confirm(message);
-  }
-
-  createAlert(message) {
-    return this.pipWindow.alert(message);
-  }
+  showOverlay() {
+    const overlay =  this.#floatingDiv.querySelector('#overlay');
+    overlay.style.display = 'block';
 
 
+}
+
+ hideOverlay() {
+  const overlay =  this.#floatingDiv.querySelector('#overlay');
+  overlay.style.display = 'none';
+}
+ showAlert(message) {
+  return new Promise((resolve) => {
+      
+    this.showOverlay();
+    const popup =  this.#floatingDiv.querySelector('#popup');
+    popup.style.display = 'block';
+    this.#floatingDiv.querySelector('#popupMessage').innerText = message;
+    this.#floatingDiv.querySelector('#userInput').style.display = 'none';
+    this.#floatingDiv.querySelector('#popupButton2').style.display = 'none';
+    this.#floatingDiv.querySelector('#popupButton3').style.display = 'none';
+
+    this.#floatingDiv.querySelector('#popupButton1').innerText = 'OK';
+    this.#floatingDiv.querySelector('#popupButton1').onclick = () => {
+      this.hidePopup();
+      resolve();
+    };
+
+
+  });
+
+}
+
+ showConfirm(message, buttonText) {
+  return new Promise((resolve) => {
+    this.showOverlay();
+      const popup =  this.#floatingDiv.querySelector('#popup');
+      popup.style.display = 'block';
+
+      this.#floatingDiv.querySelector('#popupMessage').innerText = message;
+
+
+      this.#floatingDiv.querySelector('#userInput').style.display = 'none';
+
+      if (buttonText[0]){
+        this.#floatingDiv.querySelector('#popupButton1').style.display = 'inline-block';
+        this.#floatingDiv.querySelector('#popupButton1').innerText = buttonText[0] ;
+      }else{
+        this.#floatingDiv.querySelector('#popupButton1').style.display = 'none';
+      }
+
+      if (buttonText[1]){
+        this.#floatingDiv.querySelector('#popupButton2').style.display = 'inline-block';
+        this.#floatingDiv.querySelector('#popupButton2').innerText = buttonText[1] ;
+      }else{
+        this.#floatingDiv.querySelector('#popupButton2').style.display = 'none';
+      }
+
+
+      if (buttonText[2]){
+        this.#floatingDiv.querySelector('#popupButton3').style.display = 'inline-block';
+        this.#floatingDiv.querySelector('#popupButton3').innerText = buttonText[2] ;
+      }else{
+        this.#floatingDiv.querySelector('#popupButton3').style.display = 'none';
+      }
 
 
 
+      this.#floatingDiv.querySelector('#popupButton1').onclick = () => {
+        this.hidePopup();
+          resolve(buttonText[0]);
+      };
+      this.#floatingDiv.querySelector('#popupButton2').onclick = () => {
+        this.hidePopup();
+        resolve(buttonText[1]);
+      };
+
+      this.#floatingDiv.querySelector('#popupButton3').onclick = () => {
+        this.hidePopup();
+        resolve(buttonText[2]);
+      }
+  });
+}
+
+ showPrompt(message) {
+  return new Promise((resolve) => {
+    this.showOverlay();
+      const popup =  this.#floatingDiv.querySelector('#popup');
+      popup.style.display = 'block';
+      this.#floatingDiv.querySelector('#popupMessage').innerText = message;
+      const userInput =  this.#floatingDiv.querySelector('#userInput');
+      userInput.style.display = 'inline-block';
+      userInput.value = '';
+
+      this.#floatingDiv.querySelector('#popupButton1').innerText = 'OK';
+      this.#floatingDiv.querySelector('#popupButton2').innerText = 'Cancel';
+
+      this.#floatingDiv.querySelector('#popupButton1').style.display = 'inline-block';
+      this.#floatingDiv.querySelector('#popupButton2').style.display = 'inline-block';
+
+      this.#floatingDiv.querySelector('#popupButton3').style.display = 'none';
+
+
+      this.#floatingDiv.querySelector('#popupButton1').onclick = () => {
+          const inputValue = userInput.value;
+          this.hidePopup();
+          resolve(inputValue);
+      };
+      this.#floatingDiv.querySelector('#popupButton2').onclick = () => {
+        this.hidePopup();
+          resolve(null);
+      };
+      this.#floatingDiv.querySelector('#popupButton2').style.display = 'inline-block';
+  });
+}
+
+ hidePopup() {
+  const popup =  this.#floatingDiv.querySelector('#popup');
+  popup.style.display = 'none';
+  this.hideOverlay();
+}
 
 
 
@@ -541,8 +682,8 @@ class UiManager{
     this.smallDiv = document.createElement('div');
     this.smallDiv.id = 'small-div';
     this.smallDiv.innerHTML = `
-    <div style="position: absolute; top: 5rem; left: 61%;z-index: 999;">
-      <button id="pip-button">🎸</button>
+    <div style="position: absolute; top: 5rem; left: 61%;z-index: 999; ">
+      <button id="pip-button" style="cursor: pointer">🎸</button>
 
     </div>
     `

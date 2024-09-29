@@ -4,7 +4,8 @@ Detect youtube/youtube music url and show guitar chord overlay.\
 
 
 ## Song database
-wip
+
+[example list](https://www.youtube.com/playlist?list=PLFVrghbPJS58f8FIxA-cZVBMfWzxEwXZ6)
 
 
 
@@ -16,12 +17,10 @@ wip
 - click `Load unpacked` and select `src/` folder
 - goto [this video](https://www.youtube.com/watch?v=hTWKbfoikeg)
 
-## Features
-- support one row and table mode
-- support dynamic tempo
-- support multiple chords version e.g. capo profile or bass, piano or dynamic capo
 
 
 ## TODO
 - [ ] show custom message at specific time e.g. let user know when tempo changed or need to change capo fret
-- [ ] show some icon in the youtube thumbnail for the song that we have in the database
+- [ ] show some icon in the youtube thumbnail for the song that exist in the database
+- [ ] chord shape variations
+- [ ] pitch shift audio 
