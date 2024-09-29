@@ -459,3 +459,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 start();
+
+
+
+
+
+document.addEventListener('keydown', function(event) {
+  if (event.ctrlKey && event.key === 'ArrowRight') {
+      uiManager.changeCapoByShortcut(1);
+  } else if (event.ctrlKey && event.key === 'ArrowLeft') {
+    uiManager.changeCapoByShortcut(-1);
+  }
+});

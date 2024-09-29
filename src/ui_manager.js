@@ -583,6 +583,35 @@ class UiManager{
 
 }
 
+  changeCapoByShortcut(direction) {
+
+    const newCapoValue = Number(this.capoSelectorDiv.value) + direction;
+
+    if(newCapoValue < -2) {
+      return
+    }
+
+    if(newCapoValue > 9) {
+     return
+    }
+
+
+
+
+    if (direction > 0) {
+      this.capoSelectorDiv.value = Number(this.capoSelectorDiv.value) + 1;
+    } else {
+      this.capoSelectorDiv.value = Number(this.capoSelectorDiv.value) - 1;
+    } 
+
+
+
+    this.currentCapoValue = Number(this.capoSelectorDiv.value);
+    console.log("set currentCapoValue to " + this.currentCapoValue)
+    this.reRenderChords();
+    
+  }
+
  showConfirm(message, buttonText) {
   return new Promise((resolve) => {
     this.showOverlay();
@@ -721,6 +750,16 @@ class UiManager{
       console.log("pip hide")
       this.pipWindow = null;
       //destroyAllUi();
+    });
+
+
+
+    this.pipWindow.addEventListener('keydown', (event) => {
+      if (event.ctrlKey && event.key === 'ArrowRight') {
+          this.changeCapoByShortcut(1);
+      } else if (event.ctrlKey && event.key === 'ArrowLeft') {
+          this.changeCapoByShortcut(-1);
+      }
     });
 
 

@@ -9,7 +9,8 @@
       "storage",
       "activeTab",
       "scripting",
-      "windows"
+      "windows",
+      "commands"
     ],
 
     "web_accessible_resources": [{
