@@ -5,7 +5,7 @@ The chords are load from my database when start the plugin
 
 
 
-![example](assets/example.gif)
+![example](assets/example_2.gif)
 
 
 ## Song database
