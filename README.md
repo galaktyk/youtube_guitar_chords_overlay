@@ -1,6 +1,6 @@
 # youtube_guitar_chords_overlay
 Detect youtube/youtube music url and show guitar chord overlay.\
-The chords are load from my database when start the plugin
+The chords are load from `my database` when start the plugin
 
 
 
@@ -12,7 +12,7 @@ The chords are load from my database when start the plugin
 
 [example list](https://www.youtube.com/playlist?list=PLFVrghbPJS58f8FIxA-cZVBMfWzxEwXZ6)
 
-(Currently only have a song that I'm practicing, feel free to add your own song.)
+Currently only have a song that I'm practicing, feel free to add your own song via the plugin (check the Create/Edit section)
 
 
 
@@ -22,13 +22,13 @@ The chords are load from my database when start the plugin
 - download this repo as zip and extract
 - goto `chrome://extensions` and Enable developer mode
 - click `Load unpacked` and select `src/` folder
-- goto [this video](https://www.youtube.com/watch?v=hTWKbfoikeg)
+
 
 
 
 
 ## Basic usage
-1. Open youtube video and click on "Guitar icon" to open the window\
+1. Open youtube video ([example](https://www.youtube.com/watch?v=hTWKbfoikeg)) and click on "Guitar 🎸 icon" above video to open the window
 
 
 ![](assets/open_plugin.jpg)
