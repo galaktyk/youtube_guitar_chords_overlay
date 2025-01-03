@@ -1,6 +1,6 @@
 # youtube_guitar_chords_overlay
-Detect youtube/youtube music url and show guitar chord overlay.\
-The chords are load from `my database` when start the plugin
+A Chrome extension that detects YouTube or YouTube Music URLs and displays a guitar chord overlay.
+(The chords are loaded from my own database.)
 
 
 
